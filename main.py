@@ -1,3 +1,4 @@
+import csv
 from typing import Dict, List
 
 from bs4 import BeautifulSoup
@@ -29,9 +30,9 @@ CSV_HEADER = [
     'fcfps_2022', 'fcfps_2021', 'fcfps_2020', 'fcfps_2019', 'fcfps_2018', 'fcfps_2017', 'fcfps_2016',
     'fcfps_2015', 'fcfps_2014', 'fcfps_2013',
 
-    'growth_estimates_next_5_years',
+    'growth_estimates',
 
-    'pe_ratio_past_5_years_minimum', 'pe_ratio_past_5_years_maximum',
+    'pe_ratio_min', 'pe_ratio_max',
 ]
 
 
@@ -81,52 +82,73 @@ def extract_pe_ratio(url: str, cast_method) -> List:
     return [cast_method(minimum), cast_method(maximum)]
 
 
-def get_numbers_for_ticker(ticker: str) -> Dict[str, Dict]:
+def get_numbers_for_ticker(ticker: str) -> List:
     """
     Fetches the needed numbers for a ticker
     :param ticker:
     :return:
     """
     print(f"*** {ticker} ***")
-    ticker_numbers = {}
+    numbers = [ticker]
+
     # 1 Get ROIC (Return on Capital)
     roic_numbers: List = extract_row_values(url=URL_RATIOS.format(ticker=ticker),
                                             row_title="Return on Capital (ROIC)",
                                             cast_method=lambda x: float(x.replace('%', '')))
     print(f"ROIC: {roic_numbers}")
+    numbers.extend(roic_numbers)
+
     # 2 Get Book Value per Share
     bvps_numbers: List = extract_row_values(url=URL_BALANCE_SHEET.format(ticker=ticker),
                                             row_title="Book Value Per Share",
                                             cast_method=lambda x: float(x.replace(',', '.')))
     print(f"Book Value per Share: {bvps_numbers}")
+    numbers.extend(bvps_numbers)
+
     # 3 Get EPS (Diluted)
     eps_numbers: List = extract_row_values(url=URL_FINANCIALS.format(ticker=ticker),
                                            row_title="EPS (Diluted)",
                                            cast_method=lambda x: float(x.replace(',', '.')))
     print(f"EPS (Diluted): {eps_numbers}")
+    numbers.extend(eps_numbers)
+
     # 4 Revenue
     revenue_numbers: List = extract_row_values(url=URL_FINANCIALS.format(ticker=ticker),
                                                row_title="Revenue",
                                                cast_method=lambda x: float(x.replace(',', '.')))
     print(f"Revenue: {revenue_numbers}")
+    numbers.extend(revenue_numbers)
+
     # 5 Free Cash Flow per Share
     fcfps_numbers: List = extract_row_values(url=URL_CASH_FLOW_STATEMENT.format(ticker=ticker),
                                              row_title="Free Cash Flow Per Share",
                                              cast_method=lambda x: float(x.replace(',', '.')))
     print(f"Free Cash Flow Per Share: {fcfps_numbers}")
+    numbers.extend(fcfps_numbers)
+
     # 6 Growth Estimates - Next 5 Years
     growth_estimates_numbers: List = extract_growth_estimates(url=URL_DETAILED_EARNING_ESTIMATES.format(ticker=ticker),
                                                               row_title="Next 5 Years",
                                                               cast_method=lambda x: float(x.replace(',', '.')))
     print(f"Growth Estimates - Next 5 Years: {growth_estimates_numbers}")
+    numbers.extend(growth_estimates_numbers)
+
     # 7 PE Ratio - Minimum & Maximum - Past 5 Years
     pe_ratio_numbers: List = extract_pe_ratio(url=URL_PE_RATIO.format(ticker=ticker),
                                               cast_method=lambda x: float(x.replace(',', '.')))
     print(f"PE Ratio: {pe_ratio_numbers}")
+    numbers.extend(pe_ratio_numbers)
+
+    return numbers
 
 
-def save_numbers_to_csv(numbers: Dict[str, Dict]):
-    pass
+def save_numbers_to_csv(numbers: List[List]):
+    csv_data = [CSV_HEADER]
+    csv_data.extend(numbers)
+    assert len(CSV_HEADER) == len(numbers[0])
+
+    with open('ticker_numbers.csv', 'w') as ticker_numbers_csv:
+        csv.writer(ticker_numbers_csv, delimiter=",").writerows(csv_data)
 
 
 if __name__ == '__main__':
