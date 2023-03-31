@@ -1,2 +1,2 @@
 # stock-information-scraper
-A Google Cloud Function to scrape stock information from different websites.
+ Python script to extract stock information from different websites.
