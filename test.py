@@ -1,7 +1,7 @@
 from hamcrest import assert_that, equal_to, has_length
 import unittest
 
-from main import get_numbers_for_ticker, CSV_HEADER
+from scraper import get_numbers_for_ticker, CSV_HEADER
 
 
 class TestScraper(unittest.TestCase):
