@@ -1,9 +1,11 @@
 import csv
-from typing import Dict, List
+import time
+from typing import List
 
 from bs4 import BeautifulSoup
 
 import requests as requests
+from http.client import responses
 
 URL_RATIOS = 'https://stockanalysis.com/stocks/{ticker}/financials/ratios/'
 URL_BALANCE_SHEET = 'https://stockanalysis.com/stocks/{ticker}/financials/balance-sheet/'
@@ -42,6 +44,10 @@ def get_soup(url: str):
         # nopep8: E501
     }
     response = requests.get(url, headers=headers)
+    while response.status_code != 200:
+        print(f"Waiting 10 seconds, since status is '{responses[response.status_code]} [{response.status_code}]'")
+        time.sleep(10)
+        response = requests.get(url, headers=headers)
     return BeautifulSoup(response.content, 'html.parser')
 
 
@@ -66,7 +72,8 @@ def extract_growth_estimates(row_title: str, url: str, cast_method) -> List:
     table_rows = soup.find('div', id='earnings_growth_estimates').select('table > tbody > tr')
     for r in table_rows:
         if row_title == r.select('td')[0].text.strip():
-            return [cast_method(r.select('td')[1].text.strip())]
+            text = r.select('td')[1].text.strip()
+            return [cast_method(text)]
 
 
 def extract_pe_ratio(url: str, cast_method) -> List:
@@ -88,54 +95,63 @@ def get_numbers_for_ticker(ticker: str) -> List:
     :param ticker:
     :return:
     """
+
+    def string_to_float(value: str) -> float:
+        if value in {'-', 'NA', '--'}:
+            return value
+        return float(value.replace(',', ''))
+
+    def percent_to_float(value: str) -> float:
+        return string_to_float(value.replace('%', ''))
+
     print(f"*** {ticker} ***")
     numbers = [ticker]
 
     # 1 Get ROIC (Return on Capital)
     roic_numbers: List = extract_row_values(url=URL_RATIOS.format(ticker=ticker),
                                             row_title="Return on Capital (ROIC)",
-                                            cast_method=lambda x: float(x.replace('%', '')))
+                                            cast_method=percent_to_float)
     print(f"ROIC: {roic_numbers}")
     numbers.extend(roic_numbers)
 
     # 2 Get Book Value per Share
     bvps_numbers: List = extract_row_values(url=URL_BALANCE_SHEET.format(ticker=ticker),
                                             row_title="Book Value Per Share",
-                                            cast_method=lambda x: float(x.replace(',', '.')))
+                                            cast_method=string_to_float)
     print(f"Book Value per Share: {bvps_numbers}")
     numbers.extend(bvps_numbers)
 
     # 3 Get EPS (Diluted)
     eps_numbers: List = extract_row_values(url=URL_FINANCIALS.format(ticker=ticker),
                                            row_title="EPS (Diluted)",
-                                           cast_method=lambda x: float(x.replace(',', '.')))
+                                           cast_method=string_to_float)
     print(f"EPS (Diluted): {eps_numbers}")
     numbers.extend(eps_numbers)
 
     # 4 Revenue
     revenue_numbers: List = extract_row_values(url=URL_FINANCIALS.format(ticker=ticker),
                                                row_title="Revenue",
-                                               cast_method=lambda x: float(x.replace(',', '.')))
+                                               cast_method=string_to_float)
     print(f"Revenue: {revenue_numbers}")
     numbers.extend(revenue_numbers)
 
     # 5 Free Cash Flow per Share
     fcfps_numbers: List = extract_row_values(url=URL_CASH_FLOW_STATEMENT.format(ticker=ticker),
                                              row_title="Free Cash Flow Per Share",
-                                             cast_method=lambda x: float(x.replace(',', '.')))
+                                             cast_method=string_to_float)
     print(f"Free Cash Flow Per Share: {fcfps_numbers}")
     numbers.extend(fcfps_numbers)
 
     # 6 Growth Estimates - Next 5 Years
     growth_estimates_numbers: List = extract_growth_estimates(url=URL_DETAILED_EARNING_ESTIMATES.format(ticker=ticker),
                                                               row_title="Next 5 Years",
-                                                              cast_method=lambda x: float(x.replace(',', '.')))
+                                                              cast_method=string_to_float)
     print(f"Growth Estimates - Next 5 Years: {growth_estimates_numbers}")
     numbers.extend(growth_estimates_numbers)
 
     # 7 PE Ratio - Minimum & Maximum - Past 5 Years
     pe_ratio_numbers: List = extract_pe_ratio(url=URL_PE_RATIO.format(ticker=ticker),
-                                              cast_method=lambda x: float(x.replace(',', '.')))
+                                              cast_method=string_to_float)
     print(f"PE Ratio: {pe_ratio_numbers}")
     numbers.extend(pe_ratio_numbers)
 
@@ -152,6 +168,6 @@ def save_numbers_to_csv(numbers: List[List], file_name: str):
 
 
 if __name__ == '__main__':
-    all_tickers = ['META', 'AAPL', 'MSFT']
+    all_tickers = ['META', 'AAPL', 'MSFT', 'GOOGL', 'AMD', 'AMZN', 'LLY', 'NVDA', 'FSLR', 'PERI', 'TSLA', 'AGYS', 'NVO', 'WIRE', 'JBL', 'ENPH', 'SPOT', 'ASML']
     all_numbers = [get_numbers_for_ticker(t) for t in all_tickers]
     save_numbers_to_csv(all_numbers, 'ticker_numbers.csv')
