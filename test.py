@@ -1,6 +1,7 @@
 from hamcrest import assert_that, equal_to, has_length
 import unittest
 
+from data_providers import get_years
 from scraper import get_numbers_for_ticker, CSV_HEADER
 
 
@@ -24,3 +25,12 @@ class TestScraper(unittest.TestCase):
         assert_that(lly_numbers[CSV_HEADER.index('revenue_2022')], equal_to(28541.4))
 
 
+class TestGetYears(unittest.TestCase):
+
+    def test_get_years_desc(self):
+        years = get_years(3, start_year=2000, desc=True)
+        assert_that(years, equal_to([2000, 1999, 1998]))
+
+    def test_get_years_asc(self):
+        years = get_years(3, start_year=2000, desc=False)
+        assert_that(years, equal_to([2000, 2001, 2002]))

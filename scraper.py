@@ -51,42 +51,7 @@ def get_soup(url: str):
     return BeautifulSoup(response.content, 'html.parser')
 
 
-def extract_row_values(row_title: str, url: str, cast_method) -> List:
-    soup = get_soup(url)
-    table_rows = soup.select('table[data-test="financials"] > tbody > tr')
-    for r in table_rows:
-        if row_title == r.select('td')[0].text.strip():
-            table_row = r
-            break
-    raw_numbers = []
-    for td in table_row.select('td'):
-        if "Upgrade" in td.text or row_title == td.text.strip():
-            continue
-        else:
-            raw_numbers.append(td.text.strip())
-    return [cast_method(n) for n in raw_numbers]
 
-
-def extract_growth_estimates(row_title: str, url: str, cast_method) -> List:
-    soup = get_soup(url)
-    table_rows = soup.find('div', id='earnings_growth_estimates').select('table > tbody > tr')
-    for r in table_rows:
-        if row_title == r.select('td')[0].text.strip():
-            text = r.select('td')[1].text.strip()
-            return [cast_method(text)]
-
-
-def extract_pe_ratio(url: str, cast_method) -> List:
-    soup = get_soup(url)
-    divs = soup.find_all('div', class_='key-stat')
-    for div in divs:
-        if "Minimum" in div.text:
-            minimum = div.find('div', class_='key-stat-title').text.strip()
-        elif "Maximum" in div.text:
-            maximum = div.find('div', class_='key-stat-title').text.strip()
-        else:
-            pass
-    return [cast_method(minimum), cast_method(maximum)]
 
 
 def get_numbers_for_ticker(ticker: str) -> List:
@@ -108,37 +73,37 @@ def get_numbers_for_ticker(ticker: str) -> List:
     numbers = [ticker]
 
     # 1 Get ROIC (Return on Capital)
-    roic_numbers: List = extract_row_values(url=URL_RATIOS.format(ticker=ticker),
-                                            row_title="Return on Capital (ROIC)",
-                                            cast_method=percent_to_float)
+    roic_numbers: List = extract_row_value(url=URL_RATIOS.format(ticker=ticker),
+                                           row_title="Return on Capital (ROIC)",
+                                           cast_method=percent_to_float)
     print(f"ROIC: {roic_numbers}")
     numbers.extend(roic_numbers)
 
     # 2 Get Book Value per Share
-    bvps_numbers: List = extract_row_values(url=URL_BALANCE_SHEET.format(ticker=ticker),
-                                            row_title="Book Value Per Share",
-                                            cast_method=string_to_float)
+    bvps_numbers: List = extract_row_value(url=URL_BALANCE_SHEET.format(ticker=ticker),
+                                           row_title="Book Value Per Share",
+                                           cast_method=string_to_float)
     print(f"Book Value per Share: {bvps_numbers}")
     numbers.extend(bvps_numbers)
 
     # 3 Get EPS (Diluted)
-    eps_numbers: List = extract_row_values(url=URL_FINANCIALS.format(ticker=ticker),
-                                           row_title="EPS (Diluted)",
-                                           cast_method=string_to_float)
+    eps_numbers: List = extract_row_value(url=URL_FINANCIALS.format(ticker=ticker),
+                                          row_title="EPS (Diluted)",
+                                          cast_method=string_to_float)
     print(f"EPS (Diluted): {eps_numbers}")
     numbers.extend(eps_numbers)
 
     # 4 Revenue
-    revenue_numbers: List = extract_row_values(url=URL_FINANCIALS.format(ticker=ticker),
-                                               row_title="Revenue",
-                                               cast_method=string_to_float)
+    revenue_numbers: List = extract_row_value(url=URL_FINANCIALS.format(ticker=ticker),
+                                              row_title="Revenue",
+                                              cast_method=string_to_float)
     print(f"Revenue: {revenue_numbers}")
     numbers.extend(revenue_numbers)
 
     # 5 Free Cash Flow per Share
-    fcfps_numbers: List = extract_row_values(url=URL_CASH_FLOW_STATEMENT.format(ticker=ticker),
-                                             row_title="Free Cash Flow Per Share",
-                                             cast_method=string_to_float)
+    fcfps_numbers: List = extract_row_value(url=URL_CASH_FLOW_STATEMENT.format(ticker=ticker),
+                                            row_title="Free Cash Flow Per Share",
+                                            cast_method=string_to_float)
     print(f"Free Cash Flow Per Share: {fcfps_numbers}")
     numbers.extend(fcfps_numbers)
 
@@ -168,6 +133,7 @@ def save_numbers_to_csv(numbers: List[List], file_name: str):
 
 
 if __name__ == '__main__':
-    all_tickers = ['META', 'AAPL', 'MSFT', 'GOOGL', 'AMD', 'AMZN', 'LLY', 'NVDA', 'FSLR', 'PERI', 'TSLA', 'AGYS', 'NVO', 'WIRE', 'JBL', 'ENPH', 'SPOT', 'ASML']
+    # all_tickers = ['META', 'AAPL', 'MSFT', 'GOOGL', 'AMD', 'AMZN', 'LLY', 'NVDA', 'FSLR', 'PERI', 'TSLA', 'AGYS', 'NVO', 'WIRE', 'JBL', 'ENPH', 'SPOT', 'ASML']
+    all_tickers = ['PANW', 'CI']
     all_numbers = [get_numbers_for_ticker(t) for t in all_tickers]
-    save_numbers_to_csv(all_numbers, 'ticker_numbers.csv')
+    save_numbers_to_csv(all_numbers, 'panw_numbers.csv')
