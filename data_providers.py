@@ -8,7 +8,6 @@ import requests
 from bs4 import BeautifulSoup
 
 
-
 def string_to_float(value: str) -> float:
     if value not in {'-', 'NA', '--'}:
         return float(value.replace(',', ''))
@@ -63,24 +62,33 @@ def get_soup(url: str):
 
 def extract_row_value(soup, row_title: str, year: int, cast_method) -> float:
     # Find index of year column
-    year_index = 0
+    year_index = None
+    header_row = soup.select('table[data-test="financials"] > thead > tr')[0]
+    for index, td in enumerate(header_row.select('th'), 0):
+        if td.text.strip() == str(year):
+            year_index = index
+            break
+        elif td.text.strip().lower() == "current" and year == datetime.now().year:
+            year_index = index
+            break
+
     if not year_index:
         return None
 
     # Find row to process
-    table_rows = soup.select('table[data-test="financials"] > tbody > tr')
     row_to_process = None
+    table_rows = soup.select('table[data-test="financials"] > tbody > tr')
     for r in table_rows:
-        if row_title == r.select('td')[0].text.strip():
+        if row_title.lower() == r.select('td')[0].text.strip().lower():
             row_to_process = r
             break
 
     # Return value of cell
-    for td in row_to_process.select('td'):
-        if "Upgrade" in td.text or row_title == td.text.strip():
-            return None
-        else:
-            return cast_method(td.text.strip())
+    cell_to_process = row_to_process.select('td')[year_index]
+    if "Upgrade" in cell_to_process.text or row_title == cell_to_process.text.strip():
+        return None
+    else:
+        return cast_method(cell_to_process.text.strip())
 
 
 # def extract_growth_estimates(row_title: str, url: str, cast_method) -> List:
@@ -121,13 +129,14 @@ def _build_soup(ticker: str) -> Dict:
         DataType.BOOK_VALUE_PER_SHARE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/balance-sheet/'),
         DataType.EPS_DILUTED: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
         DataType.REVENUE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
-        DataType.FREE_CASH_FLOW_PER_SHARE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/'),
+        DataType.FREE_CASH_FLOW_PER_SHARE: get_soup(
+            f'{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/'),
         DataType.GROWTH_ESTIMATES_NEXT_5_YEARS: get_soup(f'{zack_base_url}/{ticker}/detailed-earning-estimates'),
         DataType.PE_RATIO: get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio')
     }
 
 
-class DataProvider:
+class StockInformation:
 
     def __init__(self, ticker: str):
         self.ticker = ticker
@@ -146,19 +155,30 @@ class DataProvider:
 
     def get_all_values(self, years: List[int]) -> Dict:
         data = {}
+
+        # Those are on different websites and have different structure
+        special_data_types = (DataType.PE_RATIO, DataType.GROWTH_ESTIMATES_NEXT_5_YEARS)
+
         for data_type in DataType:
+            if data_type in special_data_types:
+                continue
+
             title = data_type.value['title']
             data[title] = {}
             for year in years:
                 data[title][year] = self.get_value(data_type, year)
 
+        # Handle special data types
+
         return {
-            'min_year': 0,
-            'max_year': 0,
+            'min_year': min(years),
+            'max_year': max(years),
+            'ticker': self.ticker,
             'data': data
         }
 
 
 if __name__ == '__main__':
-    data_provider = DataProvider('META')
-    print(data_provider.get_all_values([2022, 2021]))
+    data_provider = StockInformation('META')
+    from pprint import pprint as pp
+    pp(data_provider.get_all_values(get_years()))
