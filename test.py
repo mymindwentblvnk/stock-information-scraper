@@ -10,15 +10,16 @@ class TestScraper(unittest.TestCase):
     def test_META_stock_information(self):
         years = get_years(number_of_years=11)
         info = StockInformation('META').get_all_values(years)
-        assert_that(info['ticker'], equal_to('META'))
-        assert_that(info['data'][DataType.RETURN_ON_CAPITAL_ROIC.value['title']][2019], equal_to(30.10))
-        assert_that(info['data'][DataType.BOOK_VALUE_PER_SHARE.value['title']][2013], equal_to(6.39))
-        assert_that(info['data'][DataType.EPS_DILUTED.value['title']][2022], equal_to(8.59))
-        assert_that(info['data'][DataType.REVENUE.value['title']][2020], equal_to(85965))
-        assert_that(info['data'][DataType.FREE_CASH_FLOW_PER_SHARE.value['title']][2014], equal_to(2.10))
-        # assert_that(meta_numbers[CSV_HEADER.index('growth_estimates')], equal_to(10.6))
-        # assert_that(meta_numbers[CSV_HEADER.index('pe_ratio_min')], equal_to(8.476))
-        # assert_that(meta_numbers[CSV_HEADER.index('pe_ratio_max')], equal_to(37.11))
+        assert_that(info.ticker, equal_to('META'))
+        assert_that(info.return_on_capital_roic[2019], equal_to(30.10))
+        assert_that(info.book_value_per_share[2013], equal_to(6.39))
+        assert_that(info.eps_diluted[2022], equal_to(8.59))
+        assert_that(info.revenue[2020], equal_to(85965))
+        assert_that(info.free_cash_flow_per_share[2014], equal_to(2.10))
+        # This changes regularly. See https://www.zacks.com/stock/quote/META/detailed-earning-estimates for current value
+        # assert_that(info.growth_estimates_next_5_years, equal_to(19.5))
+        assert_that(info.pe_ratio_min, equal_to(8.476))
+        assert_that(info.pe_ratio_max, equal_to(37.11))
 
     def test_LLY_stock_information(self):
         revenue_2022 = StockInformation('LLY').get_value(DataType.REVENUE, 2022)
@@ -26,8 +27,8 @@ class TestScraper(unittest.TestCase):
 
     def test_max_min_year(self):
         info = StockInformation('GOGL').get_all_values([2023, 2022, 2019, 2018, 2000])
-        assert_that(info['max_year'], equal_to(2023))
-        assert_that(info['min_year'], equal_to(2000))
+        assert_that(info.max_year, equal_to(2023))
+        assert_that(info.min_year, equal_to(2018))  # Since we can only retrieve data for 10 years, 2000 will be None
 
 
 class TestGetYears(unittest.TestCase):

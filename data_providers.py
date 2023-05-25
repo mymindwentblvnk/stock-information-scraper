@@ -39,11 +39,15 @@ class DataType(Enum):
         'cast_method': string_to_float
     }
     GROWTH_ESTIMATES_NEXT_5_YEARS = {
-        'title': "Growth Estimates - Next 5 Years",
+        'title': "Next 5 Years",
         'cast_method': string_to_float
     }
-    PE_RATIO = {
-        'title': "PE Ratio",
+    PE_RATIO_MIN = {
+        'title': "PE Ratio Min",
+        'cast_method': string_to_float
+    }
+    PE_RATIO_MAX = {
+        'title': "PE Ratio Max",
         'cast_method': string_to_float
     }
 
@@ -91,26 +95,28 @@ def extract_row_value(soup, row_title: str, year: int, cast_method) -> float:
         return cast_method(cell_to_process.text.strip())
 
 
-# def extract_growth_estimates(row_title: str, url: str, cast_method) -> List:
-#     soup = get_soup(url)
-#     table_rows = soup.find('div', id='earnings_growth_estimates').select('table > tbody > tr')
-#     for r in table_rows:
-#         if row_title == r.select('td')[0].text.strip():
-#             text = r.select('td')[1].text.strip()
-#             return [cast_method(text)]
-#
-#
-# def extract_pe_ratio(url: str, cast_method) -> List:
-#     soup = get_soup(url)
-#     divs = soup.find_all('div', class_='key-stat')
-#     for div in divs:
-#         if "Minimum" in div.text:
-#             minimum = div.find('div', class_='key-stat-title').text.strip()
-#         elif "Maximum" in div.text:
-#             maximum = div.find('div', class_='key-stat-title').text.strip()
-#         else:
-#             pass
-#     return [cast_method(minimum), cast_method(maximum)]
+def extract_growth_estimates(soup, row_title: str, cast_method) -> float:
+    table_rows = soup.find('div', id='earnings_growth_estimates').select('table > tbody > tr')
+    for r in table_rows:
+        if row_title == r.select('td')[0].text.strip():
+            text = r.select('td')[1].text.strip()
+            return cast_method(text)
+
+
+def extract_pe_ratio_min(soup, cast_method) -> float:
+    divs = soup.find_all('div', class_='key-stat')
+    for div in divs:
+        if "Minimum" in div.text:
+            minimum = div.find('div', class_='key-stat-title').text.strip()
+            return cast_method(minimum)
+
+
+def extract_pe_ratio_max(soup, cast_method) -> float:
+    divs = soup.find_all('div', class_='key-stat')
+    for div in divs:
+        if "Maximum" in div.text:
+            maximum = div.find('div', class_='key-stat-title').text.strip()
+            return cast_method(maximum)
 
 
 def get_years(start_year=datetime.today().year, number_of_years=10, desc=True) -> List[int]:
@@ -129,11 +135,48 @@ def _build_soup(ticker: str) -> Dict:
         DataType.BOOK_VALUE_PER_SHARE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/balance-sheet/'),
         DataType.EPS_DILUTED: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
         DataType.REVENUE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
-        DataType.FREE_CASH_FLOW_PER_SHARE: get_soup(
-            f'{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/'),
+        DataType.FREE_CASH_FLOW_PER_SHARE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/'),
         DataType.GROWTH_ESTIMATES_NEXT_5_YEARS: get_soup(f'{zack_base_url}/{ticker}/detailed-earning-estimates'),
-        DataType.PE_RATIO: get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio')
+        DataType.PE_RATIO_MIN: get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio'),
+        DataType.PE_RATIO_MAX: get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio')
     }
+
+
+class StockInformationResult:
+
+    ticker: str
+    return_on_capital_roic: Dict
+    book_value_per_share: Dict
+    eps_diluted: Dict
+    revenue: Dict
+    free_cash_flow_per_share: Dict
+    growth_estimates_next_5_years: float
+    pe_ratio_min: float
+    pe_ratio_max: float
+
+    @property
+    def _all_years_with_data(self):
+        all_dicts = [
+            self.return_on_capital_roic,
+            self.book_value_per_share,
+            self.eps_diluted,
+            self.revenue,
+            self.free_cash_flow_per_share
+        ]
+        all_years_with_data = []
+        for d in all_dicts:
+            for year, value in d.items():
+                if value:
+                    all_years_with_data.append(year)
+        return all_years_with_data
+
+    @property
+    def min_year(self) -> int:
+        return min(self._all_years_with_data)
+
+    @property
+    def max_year(self) -> int:
+        return max(self._all_years_with_data)
 
 
 class StockInformation:
@@ -144,38 +187,35 @@ class StockInformation:
 
     def get_value(self, data_type: DataType, year: int) -> float:
         if data_type == DataType.GROWTH_ESTIMATES_NEXT_5_YEARS:
-            pass
-        elif data_type == DataType.PE_RATIO:
-            pass
+            return extract_growth_estimates(soup=self._soup[data_type],
+                                            row_title=data_type.value['title'],
+                                            cast_method=data_type.value['cast_method'])
+        elif data_type == DataType.PE_RATIO_MIN:
+            return extract_pe_ratio_min(soup=self._soup[data_type],
+                                        cast_method=data_type.value['cast_method'])
+        elif data_type == DataType.PE_RATIO_MAX:
+            return extract_pe_ratio_max(soup=self._soup[data_type],
+                                        cast_method=data_type.value['cast_method'])
         else:
             return extract_row_value(soup=self._soup[data_type],
                                      row_title=data_type.value['title'],
                                      year=year,
                                      cast_method=data_type.value['cast_method'])
 
-    def get_all_values(self, years: List[int]) -> Dict:
-        data = {}
+    def get_all_values(self, years: List[int]) -> StockInformationResult:
+        result = StockInformationResult()
 
-        # Those are on different websites and have different structure
-        special_data_types = (DataType.PE_RATIO, DataType.GROWTH_ESTIMATES_NEXT_5_YEARS)
+        result.ticker = self.ticker
+        result.return_on_capital_roic = {year: self.get_value(DataType.RETURN_ON_CAPITAL_ROIC, year) for year in years}
+        result.book_value_per_share = {year: self.get_value(DataType.BOOK_VALUE_PER_SHARE, year) for year in years}
+        result.eps_diluted = {year: self.get_value(DataType.EPS_DILUTED, year) for year in years}
+        result.revenue = {year: self.get_value(DataType.REVENUE, year) for year in years}
+        result.free_cash_flow_per_share = {year: self.get_value(DataType.FREE_CASH_FLOW_PER_SHARE, year) for year in years}
+        result.growth_estimates_next_5_years = self.get_value(DataType.GROWTH_ESTIMATES_NEXT_5_YEARS, -1)
+        result.pe_ratio_max = self.get_value(DataType.PE_RATIO_MAX, -1)
+        result.pe_ratio_min = self.get_value(DataType.PE_RATIO_MIN, -1)
 
-        for data_type in DataType:
-            if data_type in special_data_types:
-                continue
-
-            title = data_type.value['title']
-            data[title] = {}
-            for year in years:
-                data[title][year] = self.get_value(data_type, year)
-
-        # Handle special data types
-
-        return {
-            'min_year': min(years),
-            'max_year': max(years),
-            'ticker': self.ticker,
-            'data': data
-        }
+        return result
 
 
 if __name__ == '__main__':
