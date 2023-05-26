@@ -141,10 +141,10 @@ def _build_soup(ticker: str) -> Dict:
     }
 
 
-class StockInformationResult:
+class StockInformation:
 
     ticker: str
-    return_on_capital_roic: Dict
+    return_on_capital: Dict
     book_value_per_share: Dict
     eps_diluted: Dict
     revenue: Dict
@@ -156,7 +156,7 @@ class StockInformationResult:
     @property
     def _all_years_with_data(self):
         all_dicts = [
-            self.return_on_capital_roic,
+            self.return_on_capital,
             self.book_value_per_share,
             self.eps_diluted,
             self.revenue,
@@ -178,13 +178,13 @@ class StockInformationResult:
         return max(self._all_years_with_data)
 
 
-class StockInformation:
+class DataProvider:
 
     def __init__(self, ticker: str):
         self.ticker = ticker
         self._soup = _build_soup(ticker=self.ticker)
 
-    def get_value(self, data_type: DataType, year: int) -> float:
+    def get_specific_value(self, data_type: DataType, year: int) -> float:
         if data_type == DataType.GROWTH_ESTIMATES_NEXT_5_YEARS:
             return extract_growth_estimates(soup=self._soup[data_type],
                                             row_title=data_type.value['title'],
@@ -201,23 +201,15 @@ class StockInformation:
                                      year=year,
                                      cast_method=data_type.value['cast_method'])
 
-    def get_all_values(self, years: List[int]) -> StockInformationResult:
-        result = StockInformationResult()
-
+    def get_stock_information(self, years: List[int]) -> StockInformation:
+        result = StockInformation()
         result.ticker = self.ticker
-        result.return_on_capital_roic = {year: self.get_value(DataType.RETURN_ON_CAPITAL_ROIC, year) for year in years}
-        result.book_value_per_share = {year: self.get_value(DataType.BOOK_VALUE_PER_SHARE, year) for year in years}
-        result.eps_diluted = {year: self.get_value(DataType.EPS_DILUTED, year) for year in years}
-        result.revenue = {year: self.get_value(DataType.REVENUE, year) for year in years}
-        result.free_cash_flow_per_share = {year: self.get_value(DataType.FREE_CASH_FLOW_PER_SHARE, year) for year in years}
-        result.growth_estimates_next_5_years = self.get_value(DataType.GROWTH_ESTIMATES_NEXT_5_YEARS, -1)
-        result.pe_ratio_max = self.get_value(DataType.PE_RATIO_MAX, -1)
-        result.pe_ratio_min = self.get_value(DataType.PE_RATIO_MIN, -1)
-
+        result.return_on_capital = {year: self.get_specific_value(DataType.RETURN_ON_CAPITAL_ROIC, year) for year in years}
+        result.book_value_per_share = {year: self.get_specific_value(DataType.BOOK_VALUE_PER_SHARE, year) for year in years}
+        result.eps_diluted = {year: self.get_specific_value(DataType.EPS_DILUTED, year) for year in years}
+        result.revenue = {year: self.get_specific_value(DataType.REVENUE, year) for year in years}
+        result.free_cash_flow_per_share = {year: self.get_specific_value(DataType.FREE_CASH_FLOW_PER_SHARE, year) for year in years}
+        result.growth_estimates_next_5_years = self.get_specific_value(DataType.GROWTH_ESTIMATES_NEXT_5_YEARS, -1)
+        result.pe_ratio_max = self.get_specific_value(DataType.PE_RATIO_MAX, -1)
+        result.pe_ratio_min = self.get_specific_value(DataType.PE_RATIO_MIN, -1)
         return result
-
-
-if __name__ == '__main__':
-    data_provider = StockInformation('META')
-    from pprint import pprint as pp
-    pp(data_provider.get_all_values(get_years()))

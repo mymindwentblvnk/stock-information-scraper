@@ -1,10 +1,10 @@
 import csv
 from typing import List
 
-from data_providers import StockInformation, get_years, StockInformationResult
+from data_providers import DataProvider, get_years, StockInformation
 
 
-def save_numbers_to_csv(information: List[StockInformationResult], file_name: str):
+def save_numbers_to_csv(information: List[StockInformation], file_name: str):
     min_year = min([i.min_year for i in information])
     max_year = max([i.max_year for i in information])
     years = list(reversed(range(min_year, max_year + 1)))
@@ -27,7 +27,7 @@ def save_numbers_to_csv(information: List[StockInformationResult], file_name: st
         # Build array with numbers
         ticker_numbers = [ticker_info.ticker]
         # Return Of Capital (ROIC)
-        roic = ticker_info.return_on_capital_roic
+        roic = ticker_info.return_on_capital
         ticker_numbers.extend([roic[year] for year in years])
         # Book Value per Share
         bvps = ticker_info.book_value_per_share
@@ -61,5 +61,5 @@ def save_numbers_to_csv(information: List[StockInformationResult], file_name: st
 if __name__ == '__main__':
     all_tickers = ['META', 'AAPL', 'MSFT', 'GOOGL', 'AMD', 'AMZN', 'LLY', 'NVDA', 'FSLR', 'PERI', 'TSLA', 'AGYS', 'NVO', 'WIRE', 'JBL', 'ENPH', 'SPOT', 'ASML', 'PANW', 'CI']
     years = get_years()
-    all_numbers = [StockInformation(t).get_all_values(years) for t in all_tickers]
-    save_numbers_to_csv(all_numbers, 'numbers.csv')
+    stock_information = [DataProvider(ticker).get_stock_information(years) for ticker in all_tickers]
+    save_numbers_to_csv(stock_information, 'numbers.csv')

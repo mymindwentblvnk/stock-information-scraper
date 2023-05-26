@@ -2,16 +2,16 @@ import unittest
 
 from hamcrest import assert_that, equal_to, has_length
 
-from data_providers import get_years, StockInformation, DataType
+from data_providers import get_years, DataProvider, DataType
 
 
 class TestScraper(unittest.TestCase):
 
     def test_META_stock_information(self):
         years = get_years(number_of_years=11)
-        info = StockInformation('META').get_all_values(years)
+        info = DataProvider('META').get_stock_information(years)
         assert_that(info.ticker, equal_to('META'))
-        assert_that(info.return_on_capital_roic[2019], equal_to(30.10))
+        assert_that(info.return_on_capital[2019], equal_to(30.10))
         assert_that(info.book_value_per_share[2013], equal_to(6.39))
         assert_that(info.eps_diluted[2022], equal_to(8.59))
         assert_that(info.revenue[2020], equal_to(85965))
@@ -22,15 +22,15 @@ class TestScraper(unittest.TestCase):
         assert_that(info.pe_ratio_max, equal_to(37.11))
 
     def test_LLY_stock_information(self):
-        revenue_2022 = StockInformation('LLY').get_value(DataType.REVENUE, 2022)
+        revenue_2022 = DataProvider('LLY').get_specific_value(DataType.REVENUE, 2022)
         assert_that(revenue_2022, equal_to(28541.4))
 
     def test_PANW_stock_information(self):
-        pe_ratio_min = StockInformation('PANW').get_value(DataType.PE_RATIO_MIN, -1)
+        pe_ratio_min = DataProvider('PANW').get_specific_value(DataType.PE_RATIO_MIN, -1)
         assert_that(pe_ratio_min, equal_to(280.78))
 
     def test_max_min_year(self):
-        info = StockInformation('GOGL').get_all_values([2023, 2022, 2019, 2018, 2000])
+        info = DataProvider('GOGL').get_stock_information([2023, 2022, 2019, 2018, 2000])
         assert_that(info.max_year, equal_to(2022))  # Since 2023 is not closed yet
         assert_that(info.min_year, equal_to(2018))  # Since we can only retrieve data for 10 years, 2000 will be None
 
