@@ -3,12 +3,13 @@ import unittest
 from hamcrest import assert_that, equal_to, has_length
 
 from data_providers import get_years, DataProvider, DataType
+from main import create_csv_data
 
 
 class TestScraper(unittest.TestCase):
 
     def test_META_stock_information(self):
-        years = get_years(number_of_years=11)
+        years = get_years()
         info = DataProvider('META').get_stock_information(years)
         assert_that(info.ticker, equal_to('META'))
         assert_that(info.return_on_capital[2019], equal_to(30.10))
@@ -46,4 +47,28 @@ class TestGetYears(unittest.TestCase):
         assert_that(years, equal_to([2000, 2001, 2002]))
 
     def test_get_years_returns_10_years(self):
-        assert_that(get_years(), has_length(10))
+        assert_that(get_years(number_of_years=10), has_length(10))
+
+
+class TestCSV(unittest.TestCase):
+
+    def test_META_csv(self):
+        years = get_years()
+        info = DataProvider('META').get_stock_information(years)
+        csv_data = create_csv_data([info])
+
+        # Check header
+        header = csv_data[0]
+        assert_that(header[0], equal_to("Ticker"))
+        assert_that(header[1], equal_to("Return On Capital (2022)"))
+        assert_that(header[4], equal_to("Return On Capital (2019)"))
+        assert_that(header[20], equal_to("Book Value per Share (2013)"))
+        assert_that(header[-1], equal_to("PE Ratio (Min)"))
+
+        # Check data
+        data = csv_data[1]
+        assert_that(data[0], equal_to('META'))
+        assert_that(data[1], equal_to(21.1))
+        assert_that(data[4], equal_to(30.10))
+        assert_that(data[20], equal_to(6.39))
+        assert_that(data[-1], equal_to(37.11))

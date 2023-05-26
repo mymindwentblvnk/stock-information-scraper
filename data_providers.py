@@ -58,7 +58,8 @@ def get_soup(url: str):
     }
     response = requests.get(url, headers=headers)
     while response.status_code != 200:
-        print(f"Waiting 10 seconds, since status is '{responses[response.status_code]} [{response.status_code}]'")
+        # print(f"Waiting 10 seconds, since status is '{responses[response.status_code]} [{response.status_code}]'")
+        print(f"Still loading...")
         time.sleep(10)
         response = requests.get(url, headers=headers)
     return BeautifulSoup(response.content, 'html.parser')
@@ -118,7 +119,7 @@ def extract_pe_ratio_max(soup, cast_method) -> float:
             return cast_method(maximum)
 
 
-def get_years(start_year=datetime.today().year, number_of_years=10, desc=True) -> List[int]:
+def get_years(start_year=datetime.today().year, number_of_years=11, desc=True) -> List[int]:
     if desc:
         return list(range(start_year, start_year - number_of_years, -1))
     else:
@@ -182,6 +183,7 @@ class DataProvider:
 
     def __init__(self, ticker: str):
         self.ticker = ticker
+        print(f"Getting stock information for {self.ticker}")
         self._soup = _build_soup(ticker=self.ticker)
 
     def get_specific_value(self, data_type: DataType, year: int) -> float:
