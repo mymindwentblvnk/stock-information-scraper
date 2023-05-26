@@ -4,9 +4,11 @@ from typing import List
 
 from data_providers import DataProvider, get_years, StockInformation
 
+
 def save_csv(csv_data: List[List], file_name: str):
     with open(file_name, 'w') as ticker_numbers_csv:
         csv.writer(ticker_numbers_csv, delimiter=",").writerows(csv_data)
+
 
 def create_csv_data(information: List[StockInformation]) -> List[List]:
     min_year = min([i.min_year for i in information])
