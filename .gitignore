@@ -127,3 +127,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+numbers.csv panw_numbers.csv pawn_number_new.csv ticker_numbers.csv
