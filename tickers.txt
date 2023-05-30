@@ -1,29 +1,29 @@
-META  # Meta
-AAPL  # Apple
-MSFT  # Microsoft
-GOOGL # Google
-AMD   # AMD
-AMZN  # Amazon
-LLY   # Eli Lilly and Co
-NVDA  # Nvidia
-FSLR
-PERI
-TSLA  # Tesla
-AGYS
-NVO
-WIRE  # Encore Wire Corp
-JBL   # Jabil Inc
-ENPH  # Enphase Energy Inc
-SPOT  # Spotify
-ASML  # ASML Holding NV
-PANW  # Palo Alto
-CI    # Cigna Group
-# NIBE-B
-MOD   # Modine Manufacturing Company
-ORA   # Ormat Technologies, Inc.
-# Daldrup & Söhne AG
-NEE   # NextEra Energy Inc
-# Centrotec
-XOM   # Exxon Mobil
-CVX   # Chevron
+# META  # Meta
+# AAPL  # Apple
+# MSFT  # Microsoft
+# GOOGL # Google
+# AMD   # AMD
+# AMZN  # Amazon
+# LLY   # Eli Lilly and Co
+# NVDA  # Nvidia
+# FSLR
+# PERI
+# TSLA  # Tesla
+# AGYS
+# NVO
+# WIRE  # Encore Wire Corp
+# JBL   # Jabil Inc
+# ENPH  # Enphase Energy Inc
+# SPOT  # Spotify
+# ASML  # ASML Holding NV
+# PANW  # Palo Alto
+# CI    # Cigna Group
+# # NIBE-B
+# MOD   # Modine Manufacturing Company
+# ORA   # Ormat Technologies, Inc.
+# # Daldrup & Söhne AG
+# NEE   # NextEra Energy Inc
+# # Centrotec
+# XOM   # Exxon Mobil
+# CVX   # Chevron
 SMCI

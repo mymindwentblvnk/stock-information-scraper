@@ -2,7 +2,7 @@ import unittest
 
 from hamcrest import assert_that, equal_to, has_length
 
-from data_providers import get_years, DataProvider, DataType
+from stock_information import get_years, DataProvider, DataType
 from main import create_csv_data
 
 
@@ -63,7 +63,7 @@ class TestCSV(unittest.TestCase):
         assert_that(header[1], equal_to("Return On Capital (2022)"))
         assert_that(header[4], equal_to("Return On Capital (2019)"))
         assert_that(header[20], equal_to("Book Value per Share (2013)"))
-        assert_that(header[-1], equal_to("PE Ratio (Min)"))
+        assert_that(header[-1], equal_to("PE Ratio (Max)"))
 
         # Check data
         data = csv_data[1]

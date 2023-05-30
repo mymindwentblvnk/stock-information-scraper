@@ -1,7 +1,6 @@
 import time
 from datetime import datetime
 from enum import Enum
-from http.client import responses
 from typing import List, Dict
 
 import requests
@@ -39,7 +38,7 @@ class DataType(Enum):
         'cast_method': string_to_float
     }
     GROWTH_ESTIMATES_NEXT_5_YEARS = {
-        'title': "Next 5 Years",
+        'title': "Growth Estimates - Next 5 Years",
         'cast_method': string_to_float
     }
     PE_RATIO_MIN = {
@@ -52,7 +51,7 @@ class DataType(Enum):
     }
 
 
-def get_soup(url: str):
+def _get_soup(url: str):
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36'
     }
@@ -65,7 +64,7 @@ def get_soup(url: str):
     return BeautifulSoup(response.content, 'html.parser')
 
 
-def extract_row_value(soup, row_title: str, year: int, cast_method) -> float:
+def _extract_row_value(soup, row_title: str, year: int, cast_method) -> float:
     # Find index of year column
     year_index = None
     header_row = soup.select('table[data-test="financials"] > thead > tr')[0]
@@ -95,15 +94,15 @@ def extract_row_value(soup, row_title: str, year: int, cast_method) -> float:
         return cast_method(cell_to_process.text.strip())
 
 
-def extract_growth_estimates(soup, row_title: str, cast_method) -> float:
+def _extract_growth_estimates(soup, row_title: str, cast_method) -> float:
     table_rows = soup.find('div', id='earnings_growth_estimates').select('table > tbody > tr')
     for r in table_rows:
-        if row_title == r.select('td')[0].text.strip():
+        if row_title.endswith(r.select('td')[0].text.strip()):
             text = r.select('td')[1].text.strip()
             return cast_method(text)
 
 
-def extract_pe_ratio_min(soup, cast_method) -> float:
+def _extract_pe_ratio_min(soup, cast_method) -> float:
     divs = soup.find_all('div', class_='key-stat')
     for div in divs:
         if "Minimum" in div.text:
@@ -111,7 +110,7 @@ def extract_pe_ratio_min(soup, cast_method) -> float:
             return cast_method(minimum)
 
 
-def extract_pe_ratio_max(soup, cast_method) -> float:
+def _extract_pe_ratio_max(soup, cast_method) -> float:
     divs = soup.find_all('div', class_='key-stat')
     for div in divs:
         if "Maximum" in div.text:
@@ -131,14 +130,14 @@ def _build_soup(ticker: str) -> Dict:
     zack_base_url = 'https://www.zacks.com/stock/quote'
     ycharts_base_url = 'https://ycharts.com/companies'
     return {
-        DataType.RETURN_ON_CAPITAL_ROIC: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/ratios/'),
-        DataType.BOOK_VALUE_PER_SHARE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/balance-sheet/'),
-        DataType.EPS_DILUTED: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
-        DataType.REVENUE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
-        DataType.FREE_CASH_FLOW_PER_SHARE: get_soup(f'{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/'),
-        DataType.GROWTH_ESTIMATES_NEXT_5_YEARS: get_soup(f'{zack_base_url}/{ticker}/detailed-earning-estimates'),
-        DataType.PE_RATIO_MIN: get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio'),
-        DataType.PE_RATIO_MAX: get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio')
+        DataType.RETURN_ON_CAPITAL_ROIC: _get_soup(f'{stock_analysis_base_url}/{ticker}/financials/ratios/'),
+        DataType.BOOK_VALUE_PER_SHARE: _get_soup(f'{stock_analysis_base_url}/{ticker}/financials/balance-sheet/'),
+        DataType.EPS_DILUTED: _get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
+        DataType.REVENUE: _get_soup(f'{stock_analysis_base_url}/{ticker}/financials/'),
+        DataType.FREE_CASH_FLOW_PER_SHARE: _get_soup(f'{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/'),
+        DataType.GROWTH_ESTIMATES_NEXT_5_YEARS: _get_soup(f'{zack_base_url}/{ticker}/detailed-earning-estimates'),
+        DataType.PE_RATIO_MIN: _get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio'),
+        DataType.PE_RATIO_MAX: _get_soup(f'{ycharts_base_url}/{ticker}/pe_ratio')
     }
 
 
@@ -186,22 +185,23 @@ class DataProvider:
         print(f"Getting stock information for {self.ticker}")
         self._soup = _build_soup(ticker=self.ticker)
 
-    def get_specific_value(self, data_type: DataType, year: int) -> float:
+    def get_specific_value(self, data_type: DataType, year: int = None) -> float:
         if data_type == DataType.GROWTH_ESTIMATES_NEXT_5_YEARS:
-            return extract_growth_estimates(soup=self._soup[data_type],
-                                            row_title=data_type.value['title'],
-                                            cast_method=data_type.value['cast_method'])
+            return _extract_growth_estimates(soup=self._soup[data_type],
+                                             row_title=data_type.value['title'],
+                                             cast_method=data_type.value['cast_method'])
         elif data_type == DataType.PE_RATIO_MIN:
-            return extract_pe_ratio_min(soup=self._soup[data_type],
-                                        cast_method=data_type.value['cast_method'])
+            return _extract_pe_ratio_min(soup=self._soup[data_type],
+                                         cast_method=data_type.value['cast_method'])
         elif data_type == DataType.PE_RATIO_MAX:
-            return extract_pe_ratio_max(soup=self._soup[data_type],
-                                        cast_method=data_type.value['cast_method'])
+            return _extract_pe_ratio_max(soup=self._soup[data_type],
+                                         cast_method=data_type.value['cast_method'])
         else:
-            return extract_row_value(soup=self._soup[data_type],
-                                     row_title=data_type.value['title'],
-                                     year=year,
-                                     cast_method=data_type.value['cast_method'])
+            assert year
+            return _extract_row_value(soup=self._soup[data_type],
+                                      row_title=data_type.value['title'],
+                                      year=year,
+                                      cast_method=data_type.value['cast_method'])
 
     def get_stock_information(self, years: List[int]) -> StockInformation:
         result = StockInformation()
@@ -211,7 +211,7 @@ class DataProvider:
         result.eps_diluted = {year: self.get_specific_value(DataType.EPS_DILUTED, year) for year in years}
         result.revenue = {year: self.get_specific_value(DataType.REVENUE, year) for year in years}
         result.free_cash_flow_per_share = {year: self.get_specific_value(DataType.FREE_CASH_FLOW_PER_SHARE, year) for year in years}
-        result.growth_estimates_next_5_years = self.get_specific_value(DataType.GROWTH_ESTIMATES_NEXT_5_YEARS, -1)
-        result.pe_ratio_max = self.get_specific_value(DataType.PE_RATIO_MAX, -1)
-        result.pe_ratio_min = self.get_specific_value(DataType.PE_RATIO_MIN, -1)
+        result.growth_estimates_next_5_years = self.get_specific_value(DataType.GROWTH_ESTIMATES_NEXT_5_YEARS)
+        result.pe_ratio_max = self.get_specific_value(DataType.PE_RATIO_MAX)
+        result.pe_ratio_min = self.get_specific_value(DataType.PE_RATIO_MIN)
         return result
