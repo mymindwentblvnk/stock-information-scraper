@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "stock-information-scraper"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "stock_information_scraper"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+bs4 = "^0.0.1"
+beautifulsoup4 = "^4.12.2"
+pytest = "^7.3.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pyhamcrest = "^2.0.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = "stock_information_scraper"
+
