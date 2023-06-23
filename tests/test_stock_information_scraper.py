@@ -27,7 +27,7 @@ class TestScraper(unittest.TestCase):
         assert_that(revenue_2022, equal_to(28541.4))
 
     def test_PANW_stock_information(self):
-        pe_ratio_min = DataProvider('PANW').get_specific_value(DataType.PE_RATIO_MIN, -1)
+        pe_ratio_min = DataProvider('PANW').get_specific_value(DataType.PE_RATIO_MIN)
         assert_that(pe_ratio_min, equal_to(280.78))
 
     def test_max_min_year(self):
