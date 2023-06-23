@@ -80,13 +80,17 @@ def create_tickers(ticker_file_path: str):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('ticker_file', type=str, help='Path to a ticker file.', nargs='?', default='tickers.txt')
+    parser.add_argument('-t', '--ticker_file', type=str, help='Path to a ticker file.', nargs='?')
+    parser.add_argument('-o', '--out_file', type=str, help='Name of CSV output file.', nargs='?')
     args = parser.parse_args()
 
     all_tickers = create_tickers(args.ticker_file)
+    output_file = args.out_file if args.out_file else f'numbers_{"-".join(all_tickers)}.csv'
+
 
     years = get_years()
     print(f"Processing years: {', '.join([str(y) for y in years])}")
+    print(f"Result will be written to {output_file}")
     stock_information = [DataProvider(ticker).get_stock_information(years) for ticker in all_tickers]
     csv_data = create_csv_data(stock_information)
-    save_csv(csv_data=csv_data, file_name=f'numbers_{"-".join(all_tickers)}.csv')
+    save_csv(csv_data=csv_data, file_name=output_file)
