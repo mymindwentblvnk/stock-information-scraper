@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict
+from typing import List, Dict, Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -51,7 +51,7 @@ def _get_soup(url: str):
     return BeautifulSoup(response.content, "html.parser")
 
 
-def _extract_row_value(soup, row_title: str, year: int, cast_method) -> float:
+def _extract_row_value(soup, row_title: str, year: int, cast_method) -> Any | None:
     # Find index of year column
     year_index = None
     header_row = soup.select('table[data-test="financials"] > thead > tr')[0]
@@ -91,12 +91,13 @@ def _extract_growth_estimates(soup, row_title: str, cast_method) -> float:
             return cast_method(text)
 
 
-def _extract_revenue(soup, row_title: str, year: int, cast_method) -> float:
+def _extract_revenue(soup, row_title: str, year: int, cast_method) -> float | None:
     revenue_in_millions = _extract_row_value(soup, row_title, year, cast_method)
     if revenue_in_millions:
-        return round(revenue_in_millions/1000.0, 2)
+        return round(revenue_in_millions / 1000.0, 2)
     else:
         return None
+
 
 def _extract_pe_ratio_min(soup, cast_method) -> float:
     divs = soup.find_all("div", class_="key-stat")
@@ -179,8 +180,8 @@ def _build_soup(ticker: str) -> Dict:
 
 
 class StockInformation:
-
     ticker: str
+    company: str
     return_on_capital: Dict
     book_value_per_share: Dict
     eps_diluted: Dict
@@ -222,6 +223,11 @@ class DataProvider:
         print(f"Getting stock information for {self.ticker}")
         self._soup = _build_soup(ticker=self.ticker)
 
+    @property
+    def company(self):
+        soup = self._soup[DataType.REVENUE]  # Reads company name from revenue site
+        return soup.select("h1")[0].text
+
     def get_specific_value(self, data_type: DataType, year: int = None) -> float:
         if data_type == DataType.GROWTH_ESTIMATES_NEXT_5_YEARS:
             return _extract_growth_estimates(
@@ -240,9 +246,9 @@ class DataProvider:
         elif data_type == DataType.REVENUE:
             return _extract_revenue(
                 soup=self._soup[data_type],
-                row_title=data_type.value['title'],
+                row_title=data_type.value["title"],
                 year=year,
-                cast_method=data_type.value["cast_method"]
+                cast_method=data_type.value["cast_method"],
             )
         else:
             assert year
@@ -256,6 +262,7 @@ class DataProvider:
     def get_stock_information(self, years: List[int]) -> StockInformation:
         result = StockInformation()
         result.ticker = self.ticker
+        result.company = self.company
         result.return_on_capital = {
             year: self.get_specific_value(DataType.RETURN_ON_CAPITAL_ROIC, year)
             for year in years

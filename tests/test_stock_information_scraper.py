@@ -71,14 +71,16 @@ class TestCSV(unittest.TestCase):
         # Check header
         header = csv_data[0]
         assert_that(header[0], equal_to("Ticker"))
-        assert_that(header[1], equal_to("Return On Capital (2023)"))
-        assert_that(header[4], equal_to("Return On Capital (2020)"))
-        assert_that(header[20], equal_to("Book Value per Share (2014)"))
+        assert_that(header[1], equal_to("Company"))
+        assert_that(header[2], equal_to("Return On Capital (2023)"))
+        assert_that(header[5], equal_to("Return On Capital (2020)"))
+        assert_that(header[21], equal_to("Book Value per Share (2014)"))
         assert_that(header[-1], equal_to("PE Ratio (Max)"))
 
         # Check data
         data = csv_data[1]
         assert_that(data[0], equal_to("META"))
+        assert_that(data[1], equal_to("Meta Platforms, Inc. (META)"))
 
     def test_LLY_csv(self):
         years = get_years()
@@ -92,4 +94,4 @@ class TestCSV(unittest.TestCase):
         # Check data
         data = csv_data[1]
         assert_that(data[0], equal_to("LLY"))
-        assert_that(data[10], is_not(equal_to(data[19])))
+        assert_that(data[11], is_not(equal_to(data[20])))

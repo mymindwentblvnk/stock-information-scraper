@@ -17,8 +17,7 @@ def create_csv_data(information: List[StockInformation]) -> List[List]:
     years = list(reversed(range(min_year, max_year + 1)))
 
     # Build header
-    header = []
-    header.append("Ticker")
+    header = ["Ticker", "Company"]
     header.extend([f"Return On Capital ({year})" for year in years])
     header.extend([f"Book Value per Share ({year})" for year in years])
     header.extend([f"EPS (Diluted) ({year})" for year in years])
@@ -32,7 +31,7 @@ def create_csv_data(information: List[StockInformation]) -> List[List]:
     # Add numbers
     for ticker_info in information:
         # Build array with numbers
-        ticker_numbers = [ticker_info.ticker]
+        ticker_numbers = [ticker_info.ticker, ticker_info.company]
         # Return Of Capital (ROIC)
         roic = ticker_info.return_on_capital
         ticker_numbers.extend([roic[year] for year in years])
