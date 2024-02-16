@@ -226,7 +226,9 @@ class DataProvider:
     @property
     def company(self):
         soup = self._soup[DataType.REVENUE]  # Reads company name from revenue site
-        return soup.select("h1")[0].text
+        header = soup.select("h1")[0].text
+        header_without_ticker = header.split(f"({self.ticker})")[0].strip()
+        return header_without_ticker
 
     def get_specific_value(self, data_type: DataType, year: int = None) -> float:
         if data_type == DataType.GROWTH_ESTIMATES_NEXT_5_YEARS:

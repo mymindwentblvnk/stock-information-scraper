@@ -80,7 +80,7 @@ class TestCSV(unittest.TestCase):
         # Check data
         data = csv_data[1]
         assert_that(data[0], equal_to("META"))
-        assert_that(data[1], equal_to("Meta Platforms, Inc. (META)"))
+        assert_that(data[1], equal_to("Meta Platforms, Inc."))
 
     def test_LLY_csv(self):
         years = get_years()
