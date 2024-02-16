@@ -91,6 +91,13 @@ def _extract_growth_estimates(soup, row_title: str, cast_method) -> float:
             return cast_method(text)
 
 
+def _extract_revenue(soup, row_title: str, year: int, cast_method) -> float:
+    revenue_in_millions = _extract_row_value(soup, row_title, year, cast_method)
+    if revenue_in_millions:
+        return round(revenue_in_millions/1000.0, 2)
+    else:
+        return None
+
 def _extract_pe_ratio_min(soup, cast_method) -> float:
     divs = soup.find_all("div", class_="key-stat")
     for div in divs:
@@ -229,6 +236,13 @@ class DataProvider:
         elif data_type == DataType.PE_RATIO_MAX:
             return _extract_pe_ratio_max(
                 soup=self._soup[data_type], cast_method=data_type.value["cast_method"]
+            )
+        elif data_type == DataType.REVENUE:
+            return _extract_revenue(
+                soup=self._soup[data_type],
+                row_title=data_type.value['title'],
+                year=year,
+                cast_method=data_type.value["cast_method"]
             )
         else:
             assert year

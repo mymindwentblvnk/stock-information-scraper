@@ -19,7 +19,7 @@ class TestScraper(unittest.TestCase):
         assert_that(info.return_on_capital[2019], equal_to(16.04))
         assert_that(info.book_value_per_share[2019], equal_to(35.41))
         assert_that(info.eps_diluted[2022], equal_to(8.59))
-        assert_that(info.revenue[2020], equal_to(85965))
+        assert_that(info.revenue[2020], equal_to(85.97))
         assert_that(info.free_cash_flow_per_share[2014], equal_to(2.10))
         # This changes regularly. See https://www.zacks.com/stock/quote/META/detailed-earning-estimates for current value
         # assert_that(info.growth_estimates_next_5_years, equal_to(19.5))
@@ -29,7 +29,7 @@ class TestScraper(unittest.TestCase):
     def test_LLY_stock_information(self):
         data_provider = DataProvider("LLY")
         revenue_2022 = data_provider.get_specific_value(DataType.REVENUE, 2022)
-        assert_that(revenue_2022, equal_to(28541))
+        assert_that(revenue_2022, equal_to(28.54))
         eps_diluted_2022 = data_provider.get_specific_value(DataType.EPS_DILUTED, 2022)
         assert_that(eps_diluted_2022, equal_to(6.9))
         book_value_per_share_2022 = data_provider.get_specific_value(
