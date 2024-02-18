@@ -162,28 +162,40 @@ class StockInformationGenerator:
         soup = self._source_soups.roic_soup
         minus_years = minus_years + 1  # To skip "Current" column
         value = _extract_row_value(
-            soup=soup, row_title="Return on Capital (ROIC)", minus_years=minus_years, cast_method=percent_to_float
+            soup=soup,
+            row_title="Return on Capital (ROIC)",
+            minus_years=minus_years,
+            cast_method=percent_to_float,
         )
         return value
 
     def _extract_book_value(self, minus_years: int = 0) -> float:
         soup = self._source_soups.book_value_soup
         value = _extract_row_value(
-            soup=soup, row_title="Book Value per Share", minus_years=minus_years, cast_method=string_to_float
+            soup=soup,
+            row_title="Book Value per Share",
+            minus_years=minus_years,
+            cast_method=string_to_float,
         )
         return value
 
     def _extract_eps(self, minus_years: int = 0) -> float:
         soup = self._source_soups.eps_soup
         value = _extract_row_value(
-            soup=soup, row_title="EPS (Diluted)", minus_years=minus_years, cast_method=string_to_float
+            soup=soup,
+            row_title="EPS (Diluted)",
+            minus_years=minus_years,
+            cast_method=string_to_float,
         )
         return value
 
     def _extract_cash_flow(self, minus_years: int = 0) -> float:
         soup = self._source_soups.cash_flow_soup
         value = _extract_row_value(
-            soup=soup, row_title="Free Cash Flow Per Share", minus_years=minus_years, cast_method=string_to_float
+            soup=soup,
+            row_title="Free Cash Flow Per Share",
+            minus_years=minus_years,
+            cast_method=string_to_float,
         )
         return value
 
@@ -230,151 +242,198 @@ class StockInformationGenerator:
             # ROIC
             roic_max_year=StockInformationEntry(csv_header=HEADERS.roic_max_year, value=self._extract_roic()),
             roic_max_year_minus_1=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_1, value=self._extract_roic(minus_years=1)
+                csv_header=HEADERS.roic_max_year_minus_1,
+                value=self._extract_roic(minus_years=1),
             ),
             roic_max_year_minus_2=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_2, value=self._extract_roic(minus_years=2)
+                csv_header=HEADERS.roic_max_year_minus_2,
+                value=self._extract_roic(minus_years=2),
             ),
             roic_max_year_minus_3=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_3, value=self._extract_roic(minus_years=3)
+                csv_header=HEADERS.roic_max_year_minus_3,
+                value=self._extract_roic(minus_years=3),
             ),
             roic_max_year_minus_4=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_4, value=self._extract_roic(minus_years=4)
+                csv_header=HEADERS.roic_max_year_minus_4,
+                value=self._extract_roic(minus_years=4),
             ),
             roic_max_year_minus_5=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_5, value=self._extract_roic(minus_years=5)
+                csv_header=HEADERS.roic_max_year_minus_5,
+                value=self._extract_roic(minus_years=5),
             ),
             roic_max_year_minus_6=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_6, value=self._extract_roic(minus_years=6)
+                csv_header=HEADERS.roic_max_year_minus_6,
+                value=self._extract_roic(minus_years=6),
             ),
             roic_max_year_minus_7=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_7, value=self._extract_roic(minus_years=7)
+                csv_header=HEADERS.roic_max_year_minus_7,
+                value=self._extract_roic(minus_years=7),
             ),
             roic_max_year_minus_8=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_8, value=self._extract_roic(minus_years=8)
+                csv_header=HEADERS.roic_max_year_minus_8,
+                value=self._extract_roic(minus_years=8),
             ),
             roic_max_year_minus_9=StockInformationEntry(
-                csv_header=HEADERS.roic_max_year_minus_9, value=self._extract_roic(minus_years=9)
+                csv_header=HEADERS.roic_max_year_minus_9,
+                value=self._extract_roic(minus_years=9),
             ),
             # Book Value per Share
             book_value_max_year=StockInformationEntry(
                 csv_header=HEADERS.book_value_max_year, value=self._extract_book_value()
             ),
             book_value_max_year_minus_1=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_1, value=self._extract_book_value(minus_years=1)
+                csv_header=HEADERS.book_value_max_year_minus_1,
+                value=self._extract_book_value(minus_years=1),
             ),
             book_value_max_year_minus_2=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_2, value=self._extract_book_value(minus_years=2)
+                csv_header=HEADERS.book_value_max_year_minus_2,
+                value=self._extract_book_value(minus_years=2),
             ),
             book_value_max_year_minus_3=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_3, value=self._extract_book_value(minus_years=3)
+                csv_header=HEADERS.book_value_max_year_minus_3,
+                value=self._extract_book_value(minus_years=3),
             ),
             book_value_max_year_minus_4=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_4, value=self._extract_book_value(minus_years=4)
+                csv_header=HEADERS.book_value_max_year_minus_4,
+                value=self._extract_book_value(minus_years=4),
             ),
             book_value_max_year_minus_5=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_5, value=self._extract_book_value(minus_years=5)
+                csv_header=HEADERS.book_value_max_year_minus_5,
+                value=self._extract_book_value(minus_years=5),
             ),
             book_value_max_year_minus_6=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_6, value=self._extract_book_value(minus_years=6)
+                csv_header=HEADERS.book_value_max_year_minus_6,
+                value=self._extract_book_value(minus_years=6),
             ),
             book_value_max_year_minus_7=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_7, value=self._extract_book_value(minus_years=7)
+                csv_header=HEADERS.book_value_max_year_minus_7,
+                value=self._extract_book_value(minus_years=7),
             ),
             book_value_max_year_minus_8=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_8, value=self._extract_book_value(minus_years=8)
+                csv_header=HEADERS.book_value_max_year_minus_8,
+                value=self._extract_book_value(minus_years=8),
             ),
             book_value_max_year_minus_9=StockInformationEntry(
-                csv_header=HEADERS.book_value_max_year_minus_9, value=self._extract_book_value(minus_years=9)
+                csv_header=HEADERS.book_value_max_year_minus_9,
+                value=self._extract_book_value(minus_years=9),
             ),
             eps_max_year=StockInformationEntry(csv_header=HEADERS.eps_max_year, value=self._extract_eps()),
             eps_max_year_minus_1=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_1, value=self._extract_eps(minus_years=1)
+                csv_header=HEADERS.eps_max_year_minus_1,
+                value=self._extract_eps(minus_years=1),
             ),
             eps_max_year_minus_2=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_2, value=self._extract_eps(minus_years=2)
+                csv_header=HEADERS.eps_max_year_minus_2,
+                value=self._extract_eps(minus_years=2),
             ),
             eps_max_year_minus_3=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_3, value=self._extract_eps(minus_years=3)
+                csv_header=HEADERS.eps_max_year_minus_3,
+                value=self._extract_eps(minus_years=3),
             ),
             eps_max_year_minus_4=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_4, value=self._extract_eps(minus_years=4)
+                csv_header=HEADERS.eps_max_year_minus_4,
+                value=self._extract_eps(minus_years=4),
             ),
             eps_max_year_minus_5=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_5, value=self._extract_eps(minus_years=5)
+                csv_header=HEADERS.eps_max_year_minus_5,
+                value=self._extract_eps(minus_years=5),
             ),
             eps_max_year_minus_6=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_6, value=self._extract_eps(minus_years=6)
+                csv_header=HEADERS.eps_max_year_minus_6,
+                value=self._extract_eps(minus_years=6),
             ),
             eps_max_year_minus_7=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_7, value=self._extract_eps(minus_years=7)
+                csv_header=HEADERS.eps_max_year_minus_7,
+                value=self._extract_eps(minus_years=7),
             ),
             eps_max_year_minus_8=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_8, value=self._extract_eps(minus_years=8)
+                csv_header=HEADERS.eps_max_year_minus_8,
+                value=self._extract_eps(minus_years=8),
             ),
             eps_max_year_minus_9=StockInformationEntry(
-                csv_header=HEADERS.eps_max_year_minus_9, value=self._extract_eps(minus_years=9)
+                csv_header=HEADERS.eps_max_year_minus_9,
+                value=self._extract_eps(minus_years=9),
             ),
             revenue_max_year=StockInformationEntry(csv_header=HEADERS.revenue_max_year, value=self._extract_revenue()),
             revenue_max_year_minus_1=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_1, value=self._extract_revenue(minus_years=1)
+                csv_header=HEADERS.revenue_max_year_minus_1,
+                value=self._extract_revenue(minus_years=1),
             ),
             revenue_max_year_minus_2=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_2, value=self._extract_revenue(minus_years=2)
+                csv_header=HEADERS.revenue_max_year_minus_2,
+                value=self._extract_revenue(minus_years=2),
             ),
             revenue_max_year_minus_3=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_3, value=self._extract_revenue(minus_years=3)
+                csv_header=HEADERS.revenue_max_year_minus_3,
+                value=self._extract_revenue(minus_years=3),
             ),
             revenue_max_year_minus_4=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_4, value=self._extract_revenue(minus_years=4)
+                csv_header=HEADERS.revenue_max_year_minus_4,
+                value=self._extract_revenue(minus_years=4),
             ),
             revenue_max_year_minus_5=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_5, value=self._extract_revenue(minus_years=5)
+                csv_header=HEADERS.revenue_max_year_minus_5,
+                value=self._extract_revenue(minus_years=5),
             ),
             revenue_max_year_minus_6=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_6, value=self._extract_revenue(minus_years=6)
+                csv_header=HEADERS.revenue_max_year_minus_6,
+                value=self._extract_revenue(minus_years=6),
             ),
             revenue_max_year_minus_7=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_7, value=self._extract_revenue(minus_years=7)
+                csv_header=HEADERS.revenue_max_year_minus_7,
+                value=self._extract_revenue(minus_years=7),
             ),
             revenue_max_year_minus_8=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_8, value=self._extract_revenue(minus_years=8)
+                csv_header=HEADERS.revenue_max_year_minus_8,
+                value=self._extract_revenue(minus_years=8),
             ),
             revenue_max_year_minus_9=StockInformationEntry(
-                csv_header=HEADERS.revenue_max_year_minus_9, value=self._extract_revenue(minus_years=9)
+                csv_header=HEADERS.revenue_max_year_minus_9,
+                value=self._extract_revenue(minus_years=9),
             ),
             cash_flow_max_year=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year, value=self._extract_cash_flow()
+                csv_header=HEADERS.free_cash_flow_max_year,
+                value=self._extract_cash_flow(),
             ),
             cash_flow_max_year_minus_1=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_1, value=self._extract_cash_flow(minus_years=1)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_1,
+                value=self._extract_cash_flow(minus_years=1),
             ),
             cash_flow_max_year_minus_2=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_2, value=self._extract_cash_flow(minus_years=2)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_2,
+                value=self._extract_cash_flow(minus_years=2),
             ),
             cash_flow_max_year_minus_3=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_3, value=self._extract_cash_flow(minus_years=3)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_3,
+                value=self._extract_cash_flow(minus_years=3),
             ),
             cash_flow_max_year_minus_4=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_4, value=self._extract_cash_flow(minus_years=4)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_4,
+                value=self._extract_cash_flow(minus_years=4),
             ),
             cash_flow_max_year_minus_5=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_5, value=self._extract_cash_flow(minus_years=5)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_5,
+                value=self._extract_cash_flow(minus_years=5),
             ),
             cash_flow_max_year_minus_6=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_6, value=self._extract_cash_flow(minus_years=6)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_6,
+                value=self._extract_cash_flow(minus_years=6),
             ),
             cash_flow_max_year_minus_7=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_7, value=self._extract_cash_flow(minus_years=7)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_7,
+                value=self._extract_cash_flow(minus_years=7),
             ),
             cash_flow_max_year_minus_8=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_8, value=self._extract_cash_flow(minus_years=8)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_8,
+                value=self._extract_cash_flow(minus_years=8),
             ),
             cash_flow_max_year_minus_9=StockInformationEntry(
-                csv_header=HEADERS.free_cash_flow_max_year_minus_9, value=self._extract_cash_flow(minus_years=9)
+                csv_header=HEADERS.free_cash_flow_max_year_minus_9,
+                value=self._extract_cash_flow(minus_years=9),
             ),
             growth_estimates=StockInformationEntry(
-                csv_header=HEADERS.growth_estimates, value=self._extract_growth_estimates()
+                csv_header=HEADERS.growth_estimates,
+                value=self._extract_growth_estimates(),
             ),
             pe_min=StockInformationEntry(csv_header=HEADERS.pe_ratio_min, value=self._extract_pe_ratio_min()),
             pe_max=StockInformationEntry(csv_header=HEADERS.pe_ratio_max, value=self._extract_pe_ratio_max()),
