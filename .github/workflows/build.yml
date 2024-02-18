@@ -1,11 +1,9 @@
-name: Integration Test
+name: Build
 
 on:
   push:
     branches:
       - '**'
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   ci:
@@ -27,5 +25,9 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Run install
         run: poetry install
+      - name: Run code formatter
+        run: poetry run black --line-length 120 .
+      - name: Run linter
+        run: poetry run ruff .
       - name: Run tests
         run: poetry run pytest
