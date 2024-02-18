@@ -9,14 +9,14 @@ from stock_information_scraper.stock_information import StockInformationGenerato
 def meta_source_htmls() -> SourceHtmls:
     return SourceHtmls(
         ticker="META",
-        roic_html=open("data/meta_roic.html", "r").read(),
-        book_value_html=open("data/meta_book_value.html", "r").read(),
-        eps_html=open("data/meta_eps.html", "r").read(),
-        revenue_html=open("data/meta_revenue.html", "r").read(),
-        cash_flow_html=open("data/meta_cash_flow.html", "r").read(),
-        growth_estimates_html=open("data/meta_growth_estimates.html", "r").read(),
-        pe_min_html=open("data/meta_pe_ratio_min.html", "r").read(),
-        pe_max_html=open("data/meta_pe_ratio_max.html", "r").read(),
+        roic_html=open("tests/data/meta_roic.html", "r").read(),
+        book_value_html=open("tests/data/meta_book_value.html", "r").read(),
+        eps_html=open("tests/data/meta_eps.html", "r").read(),
+        revenue_html=open("tests/data/meta_revenue.html", "r").read(),
+        cash_flow_html=open("tests/data/meta_cash_flow.html", "r").read(),
+        growth_estimates_html=open("tests/data/meta_growth_estimates.html", "r").read(),
+        pe_min_html=open("tests/data/meta_pe_ratio_min.html", "r").read(),
+        pe_max_html=open("tests/data/meta_pe_ratio_max.html", "r").read(),
     )
 
 
@@ -24,14 +24,14 @@ def meta_source_htmls() -> SourceHtmls:
 def lly_source_htmls() -> SourceHtmls:
     return SourceHtmls(
         ticker="LLY",
-        roic_html=open("data/lly_roic.html", "r").read(),
-        book_value_html=open("data/lly_book_value.html", "r").read(),
-        eps_html=open("data/lly_eps.html", "r").read(),
-        revenue_html=open("data/lly_revenue.html", "r").read(),
-        cash_flow_html=open("data/lly_cash_flow.html", "r").read(),
-        growth_estimates_html=open("data/lly_growth_estimates.html", "r").read(),
-        pe_min_html=open("data/lly_pe_ratio_min.html", "r").read(),
-        pe_max_html=open("data/lly_pe_ratio_max.html", "r").read(),
+        roic_html=open("tests/data/lly_roic.html", "r").read(),
+        book_value_html=open("tests/data/lly_book_value.html", "r").read(),
+        eps_html=open("tests/data/lly_eps.html", "r").read(),
+        revenue_html=open("tests/data/lly_revenue.html", "r").read(),
+        cash_flow_html=open("tests/data/lly_cash_flow.html", "r").read(),
+        growth_estimates_html=open("tests/data/lly_growth_estimates.html", "r").read(),
+        pe_min_html=open("tests/data/lly_pe_ratio_min.html", "r").read(),
+        pe_max_html=open("tests/data/lly_pe_ratio_max.html", "r").read(),
     )
 
 
