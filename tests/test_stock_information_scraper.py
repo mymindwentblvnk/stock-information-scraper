@@ -3,7 +3,7 @@ import unittest
 from hamcrest import assert_that, equal_to, has_length, is_not
 
 from stock_information_scraper.main import create_csv_data
-from stock_information_scraper.stock_information import (
+from stock_information_scraper.OLD_stock_information import (
     get_years,
     DataProvider,
     DataType,
