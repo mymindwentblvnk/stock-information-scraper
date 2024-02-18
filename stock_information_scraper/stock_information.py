@@ -1,10 +1,12 @@
-import time
-from datetime import datetime
-from enum import Enum
-from typing import List, Dict, Any
+from dataclasses import dataclass
+from typing import Optional, Union
 
-import requests
 from bs4 import BeautifulSoup
+
+from stock_information_scraper import CsvHeader
+from stock_information_scraper.html_fetcher import SourceHtmls
+
+HEADERS = CsvHeader()
 
 
 def string_to_float(value: str) -> float:
@@ -16,55 +18,109 @@ def percent_to_float(value: str) -> float:
     return string_to_float(value.replace("%", ""))
 
 
-class DataType(Enum):
-    RETURN_ON_CAPITAL_ROIC = {
-        "title": "Return on Capital (ROIC)",
-        "cast_method": percent_to_float,
-    }
-    BOOK_VALUE_PER_SHARE = {
-        "title": "Book Value per Share",
-        "cast_method": string_to_float,
-    }
-    EPS_DILUTED = {"title": "EPS (Diluted)", "cast_method": string_to_float}
-    REVENUE = {"title": "Revenue", "cast_method": string_to_float}
-    FREE_CASH_FLOW_PER_SHARE = {
-        "title": "Free Cash Flow Per Share",
-        "cast_method": string_to_float,
-    }
-    GROWTH_ESTIMATES_NEXT_5_YEARS = {
-        "title": "Growth Estimates - Next 5 Years",
-        "cast_method": string_to_float,
-    }
-    PE_RATIO_MIN = {"title": "PE Ratio Min", "cast_method": string_to_float}
-    PE_RATIO_MAX = {"title": "PE Ratio Max", "cast_method": string_to_float}
+@dataclass
+class SourceSoups:
+    roic_soup: BeautifulSoup
+    book_value_soup: BeautifulSoup
+    eps_soup: BeautifulSoup
+    revenue_soup: BeautifulSoup
+    cash_flow_soup: BeautifulSoup
+    growth_estimates_soup: BeautifulSoup
+    pe_min_soup: BeautifulSoup
+    pe_max_soup: BeautifulSoup
 
 
-def _get_soup(url: str):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36"
-    }
-    response = requests.get(url, headers=headers)
-    while response.status_code != 200:
-        print("Still loading...")
-        time.sleep(10)
-        response = requests.get(url, headers=headers)
-    return BeautifulSoup(response.content, "html.parser")
+def source_htmls_to_source_soups(sources: SourceHtmls) -> SourceSoups:
+    def _get_soup(html: str) -> BeautifulSoup:
+        return BeautifulSoup(html, "html.parser")
+
+    return SourceSoups(
+        roic_soup=_get_soup(sources.roic_html),
+        book_value_soup=_get_soup(sources.book_value_html),
+        eps_soup=_get_soup(sources.eps_html),
+        revenue_soup=_get_soup(sources.revenue_html),
+        cash_flow_soup=_get_soup(sources.cash_flow_html),
+        growth_estimates_soup=_get_soup(sources.growth_estimates_html),
+        pe_min_soup=_get_soup(sources.pe_min_html),
+        pe_max_soup=_get_soup(sources.pe_max_html),
+    )
 
 
-def _extract_row_value(soup, row_title: str, year: int, cast_method) -> Any | None:
-    # Find index of year column
-    year_index = None
-    header_row = soup.select('table[data-test="financials"] > thead > tr')[0]
+@dataclass()
+class StockInformationEntry:
+    csv_header: str
+    value: Optional[Union[float, str]]
 
-    for index, td in enumerate(header_row.select("th"), 0):
-        # "Current" will be ignored, since we only extract final numbers.
-        if td.text.strip() == str(year):
-            year_index = index
-            break
 
-    if not year_index:
-        return None
+@dataclass()
+class StockInformation:
+    ticker: StockInformationEntry
+    company: StockInformationEntry
+    max_year: StockInformationEntry
+    roic_max_year: StockInformationEntry
+    roic_max_year_minus_1: StockInformationEntry
+    roic_max_year_minus_2: StockInformationEntry
+    roic_max_year_minus_3: StockInformationEntry
+    roic_max_year_minus_4: StockInformationEntry
+    roic_max_year_minus_5: StockInformationEntry
+    roic_max_year_minus_6: StockInformationEntry
+    roic_max_year_minus_7: StockInformationEntry
+    roic_max_year_minus_8: StockInformationEntry
+    roic_max_year_minus_9: StockInformationEntry
+    book_value_max_year: StockInformationEntry
+    book_value_max_year_minus_1: StockInformationEntry
+    book_value_max_year_minus_2: StockInformationEntry
+    book_value_max_year_minus_3: StockInformationEntry
+    book_value_max_year_minus_4: StockInformationEntry
+    book_value_max_year_minus_5: StockInformationEntry
+    book_value_max_year_minus_6: StockInformationEntry
+    book_value_max_year_minus_7: StockInformationEntry
+    book_value_max_year_minus_8: StockInformationEntry
+    book_value_max_year_minus_9: StockInformationEntry
+    eps_max_year: StockInformationEntry
+    eps_max_year_minus_1: StockInformationEntry
+    eps_max_year_minus_2: StockInformationEntry
+    eps_max_year_minus_3: StockInformationEntry
+    eps_max_year_minus_4: StockInformationEntry
+    eps_max_year_minus_5: StockInformationEntry
+    eps_max_year_minus_6: StockInformationEntry
+    eps_max_year_minus_7: StockInformationEntry
+    eps_max_year_minus_8: StockInformationEntry
+    eps_max_year_minus_9: StockInformationEntry
+    revenue_max_year: StockInformationEntry
+    revenue_max_year_minus_1: StockInformationEntry
+    revenue_max_year_minus_2: StockInformationEntry
+    revenue_max_year_minus_3: StockInformationEntry
+    revenue_max_year_minus_4: StockInformationEntry
+    revenue_max_year_minus_5: StockInformationEntry
+    revenue_max_year_minus_6: StockInformationEntry
+    revenue_max_year_minus_7: StockInformationEntry
+    revenue_max_year_minus_8: StockInformationEntry
+    revenue_max_year_minus_9: StockInformationEntry
+    cash_flow_max_year: StockInformationEntry
+    cash_flow_max_year_minus_1: StockInformationEntry
+    cash_flow_max_year_minus_2: StockInformationEntry
+    cash_flow_max_year_minus_3: StockInformationEntry
+    cash_flow_max_year_minus_4: StockInformationEntry
+    cash_flow_max_year_minus_5: StockInformationEntry
+    cash_flow_max_year_minus_6: StockInformationEntry
+    cash_flow_max_year_minus_7: StockInformationEntry
+    cash_flow_max_year_minus_8: StockInformationEntry
+    cash_flow_max_year_minus_9: StockInformationEntry
+    growth_estimates: StockInformationEntry
+    pe_min: StockInformationEntry
+    pe_max: StockInformationEntry
 
+    def to_dict(self):
+        result = {}
+        for _, stock_information_entry in self.__dict__.items():
+            result[stock_information_entry.csv_header] = stock_information_entry.value
+        return result
+
+
+def _extract_row_value(
+    soup: BeautifulSoup, row_title: str, minus_years: int, cast_method
+) -> Optional[Union[str, float, int]]:
     # Find row to process
     row_to_process = None
     table_rows = soup.select('table[data-test="financials"] > tbody > tr')
@@ -74,218 +130,252 @@ def _extract_row_value(soup, row_title: str, year: int, cast_method) -> Any | No
             break
 
     # Return value of cell
-    cell_to_process = row_to_process.select("td")[year_index]
+    cell_to_process = row_to_process.select("td")[1 + minus_years]
     if "Upgrade" in cell_to_process.text or row_title == cell_to_process.text.strip():
         return None
     else:
         return cast_method(cell_to_process.text.strip())
 
 
-def _extract_growth_estimates(soup, row_title: str, cast_method) -> float:
-    table_rows = soup.find("div", id="earnings_growth_estimates").select(
-        "table > tbody > tr"
-    )
-    for r in table_rows:
-        if row_title.endswith(r.select("td")[0].text.strip()):
-            text = r.select("td")[1].text.strip()
-            return cast_method(text)
+class StockInformationGenerator:
 
-
-def _extract_revenue(soup, row_title: str, year: int, cast_method) -> float | None:
-    revenue_in_millions = _extract_row_value(soup, row_title, year, cast_method)
-    if revenue_in_millions:
-        return round(revenue_in_millions / 1000.0, 2)
-    else:
-        return None
-
-
-def _extract_pe_ratio_min(soup, cast_method) -> float:
-    divs = soup.find_all("div", class_="key-stat")
-    for div in divs:
-        if "Minimum" in div.text:
-            minimum = div.find("div", class_="key-stat-title").text.strip()
-            return cast_method(minimum)
-
-
-def _extract_pe_ratio_max(soup, cast_method) -> float:
-    divs = soup.find_all("div", class_="key-stat")
-    for div in divs:
-        if "Maximum" in div.text:
-            maximum = div.find("div", class_="key-stat-title").text.strip()
-            return cast_method(maximum)
-
-
-def get_years(
-    start_year=datetime.today().year, number_of_years=11, desc=True
-) -> List[int]:
-    if desc:
-        return list(range(start_year, start_year - number_of_years, -1))
-    else:
-        return list(range(start_year, start_year + number_of_years))
-
-
-def _build_soup(ticker: str) -> Dict:
-    stock_analysis_base_url = "https://stockanalysis.com/stocks"
-    zack_base_url = "https://www.zacks.com/stock/quote"
-    ycharts_base_url = "https://ycharts.com/companies"
-
-    return_on_roic_url = f"{stock_analysis_base_url}/{ticker}/financials/ratios/"
-    return_on_capital_roic_soup = _get_soup(return_on_roic_url)
-    print(f"Loaded Return on ROIC from {return_on_roic_url}")
-
-    book_value_per_share_url = (
-        f"{stock_analysis_base_url}/{ticker}/financials/balance-sheet/"
-    )
-    book_value_per_share_soup = _get_soup(book_value_per_share_url)
-    print(f"Book Value per Share from {book_value_per_share_url}")
-
-    eps_diluted_url = f"{stock_analysis_base_url}/{ticker}/financials/"
-    eps_diluted_soup = _get_soup(eps_diluted_url)
-    print(f"Loaded EPS Diluted from {eps_diluted_url}")
-
-    revenue_url = f"{stock_analysis_base_url}/{ticker}/financials/"
-    revenue_soup = _get_soup(revenue_url)
-    print(f"Loaded Revenue from {revenue_url}")
-
-    free_cash_flow_per_share_url = (
-        f"{stock_analysis_base_url}/{ticker}/financials/cash-flow-statement/"
-    )
-    free_cash_flow_per_share_soup = _get_soup(free_cash_flow_per_share_url)
-    print(f"Loaded Free Cash Flow per Share from {free_cash_flow_per_share_url}")
-
-    growth_estimates_next_5_years_url = (
-        f"{zack_base_url}/{ticker}/detailed-earning-estimates"
-    )
-    growth_estimates_next_5_years_soup = _get_soup(growth_estimates_next_5_years_url)
-    print(f"Loaded Growth Estimates from {growth_estimates_next_5_years_url}")
-
-    pe_ratio_min_url = f"{ycharts_base_url}/{ticker}/pe_ratio"
-    pe_ratio_min_soup = _get_soup(pe_ratio_min_url)
-    print(f"Loaded PE Ratio MIN from {pe_ratio_min_url}")
-
-    pe_ratio_max_url = f"{ycharts_base_url}/{ticker}/pe_ratio"
-    pe_ratio_max_soup = _get_soup(pe_ratio_max_url)
-    print(f"Loaded PE Ratio MAX from {pe_ratio_max_url}")
-
-    return {
-        DataType.RETURN_ON_CAPITAL_ROIC: return_on_capital_roic_soup,
-        DataType.BOOK_VALUE_PER_SHARE: book_value_per_share_soup,
-        DataType.EPS_DILUTED: eps_diluted_soup,
-        DataType.REVENUE: revenue_soup,
-        DataType.FREE_CASH_FLOW_PER_SHARE: free_cash_flow_per_share_soup,
-        DataType.GROWTH_ESTIMATES_NEXT_5_YEARS: growth_estimates_next_5_years_soup,
-        DataType.PE_RATIO_MIN: pe_ratio_min_soup,
-        DataType.PE_RATIO_MAX: pe_ratio_max_soup,
-    }
-
-
-class StockInformation:
-    ticker: str
-    company: str
-    return_on_capital: Dict
-    book_value_per_share: Dict
-    eps_diluted: Dict
-    revenue: Dict
-    free_cash_flow_per_share: Dict
-    growth_estimates_next_5_years: float
-    pe_ratio_min: float
-    pe_ratio_max: float
+    def __init__(self, source_htmls: SourceHtmls):
+        self._ticker: str = source_htmls.ticker
+        self._source_soups: SourceSoups = source_htmls_to_source_soups(source_htmls)
 
     @property
-    def _all_years_with_data(self):
-        all_dicts = [
-            self.return_on_capital,
-            self.book_value_per_share,
-            self.eps_diluted,
-            self.revenue,
-            self.free_cash_flow_per_share,
-        ]
-        all_years_with_data = []
-        for d in all_dicts:
-            for year, value in d.items():
-                if value:
-                    all_years_with_data.append(year)
-        return all_years_with_data
-
-    @property
-    def min_year(self) -> int:
-        return min(self._all_years_with_data)
+    def company(self) -> str:
+        soup = self._source_soups.revenue_soup  # Reads company name from revenue site
+        header = soup.select("h1")[0].text
+        header_without_ticker = header.split(f"({self._ticker})")[0].strip()
+        return header_without_ticker
 
     @property
     def max_year(self) -> int:
-        return max(self._all_years_with_data)
+        soup = self._source_soups.revenue_soup  # Reads company name from revenue site
+        header_row = soup.select('table[data-test="financials"] > thead > tr')[0]
+        max_year = header_row.select("th")[1].text
+        if max_year:
+            return int(max_year)
 
-
-class DataProvider:
-
-    def __init__(self, ticker: str):
-        self.ticker = ticker
-        print(f"Getting stock information for {self.ticker}")
-        self._soup = _build_soup(ticker=self.ticker)
-
-    @property
-    def company(self):
-        soup = self._soup[DataType.REVENUE]  # Reads company name from revenue site
-        header = soup.select("h1")[0].text
-        header_without_ticker = header.split(f"({self.ticker})")[0].strip()
-        return header_without_ticker
-
-    def get_specific_value(self, data_type: DataType, year: int = None) -> float:
-        if data_type == DataType.GROWTH_ESTIMATES_NEXT_5_YEARS:
-            return _extract_growth_estimates(
-                soup=self._soup[data_type],
-                row_title=data_type.value["title"],
-                cast_method=data_type.value["cast_method"],
-            )
-        elif data_type == DataType.PE_RATIO_MIN:
-            return _extract_pe_ratio_min(
-                soup=self._soup[data_type], cast_method=data_type.value["cast_method"]
-            )
-        elif data_type == DataType.PE_RATIO_MAX:
-            return _extract_pe_ratio_max(
-                soup=self._soup[data_type], cast_method=data_type.value["cast_method"]
-            )
-        elif data_type == DataType.REVENUE:
-            return _extract_revenue(
-                soup=self._soup[data_type],
-                row_title=data_type.value["title"],
-                year=year,
-                cast_method=data_type.value["cast_method"],
-            )
-        else:
-            assert year
-            return _extract_row_value(
-                soup=self._soup[data_type],
-                row_title=data_type.value["title"],
-                year=year,
-                cast_method=data_type.value["cast_method"],
-            )
-
-    def get_stock_information(self, years: List[int]) -> StockInformation:
-        result = StockInformation()
-        result.ticker = self.ticker
-        result.company = self.company
-        result.return_on_capital = {
-            year: self.get_specific_value(DataType.RETURN_ON_CAPITAL_ROIC, year)
-            for year in years
-        }
-        result.book_value_per_share = {
-            year: self.get_specific_value(DataType.BOOK_VALUE_PER_SHARE, year)
-            for year in years
-        }
-        result.eps_diluted = {
-            year: self.get_specific_value(DataType.EPS_DILUTED, year) for year in years
-        }
-        result.revenue = {
-            year: self.get_specific_value(DataType.REVENUE, year) for year in years
-        }
-        result.free_cash_flow_per_share = {
-            year: self.get_specific_value(DataType.FREE_CASH_FLOW_PER_SHARE, year)
-            for year in years
-        }
-        result.growth_estimates_next_5_years = self.get_specific_value(
-            DataType.GROWTH_ESTIMATES_NEXT_5_YEARS
+    def _extract_roic(self, minus_years: int = 0) -> float:
+        soup = self._source_soups.roic_soup
+        minus_years = minus_years + 1  # To skip "Current" column
+        value = _extract_row_value(
+            soup=soup, row_title="Return on Capital (ROIC)", minus_years=minus_years, cast_method=percent_to_float
         )
-        result.pe_ratio_max = self.get_specific_value(DataType.PE_RATIO_MAX)
-        result.pe_ratio_min = self.get_specific_value(DataType.PE_RATIO_MIN)
-        return result
+        return value
+
+    def _extract_book_value(self, minus_years: int = 0) -> float:
+        soup = self._source_soups.book_value_soup
+        value = _extract_row_value(
+            soup=soup, row_title="Book Value per Share", minus_years=minus_years, cast_method=string_to_float
+        )
+        return value
+
+    def _extract_eps(self, minus_years: int = 0) -> float:
+        soup = self._source_soups.eps_soup
+        value = _extract_row_value(
+            soup=soup, row_title="EPS (Diluted)", minus_years=minus_years, cast_method=string_to_float
+        )
+        return value
+
+    def _extract_cash_flow(self, minus_years: int = 0) -> float:
+        soup = self._source_soups.cash_flow_soup
+        value = _extract_row_value(
+            soup=soup, row_title="Free Cash Flow Per Share", minus_years=minus_years, cast_method=string_to_float
+        )
+        return value
+
+    def _extract_revenue(self, minus_years: int = 0) -> float:
+        soup = self._source_soups.revenue_soup
+        revenue_in_millions = _extract_row_value(soup, "Revenue", minus_years=minus_years, cast_method=string_to_float)
+        if revenue_in_millions:
+            return round(revenue_in_millions / 1000.0, 2)
+        else:
+            return None
+
+    def _extract_growth_estimates(
+        self,
+        cast_method=string_to_float,
+    ) -> Optional[float]:
+        soup = self._source_soups.growth_estimates_soup
+        table_rows = soup.find("div", id="earnings_growth_estimates").select("table > tbody > tr")
+        for r in table_rows:
+            if "Growth Estimates - Next 5 Years".endswith(r.select("td")[0].text.strip()):
+                text = r.select("td")[1].text.strip()
+                return cast_method(text)
+
+    def _extract_pe_ratio_min(self, cast_method=string_to_float) -> Optional[float]:
+        soup = self._source_soups.pe_min_soup
+        divs = soup.find_all("div", class_="key-stat")
+        for div in divs:
+            if "Minimum" in div.text:
+                minimum = div.find("div", class_="key-stat-title").text.strip()
+                return cast_method(minimum)
+
+    def _extract_pe_ratio_max(self, cast_method=string_to_float) -> Optional[float]:
+        soup = self._source_soups.pe_max_soup
+        divs = soup.find_all("div", class_="key-stat")
+        for div in divs:
+            if "Maximum" in div.text:
+                maximum = div.find("div", class_="key-stat-title").text.strip()
+                return cast_method(maximum)
+
+    def get_stock_information(self) -> StockInformation:
+        return StockInformation(
+            ticker=StockInformationEntry(csv_header=HEADERS.ticker, value=self._ticker),
+            company=StockInformationEntry(csv_header=HEADERS.company, value=self.company),
+            max_year=StockInformationEntry(csv_header=HEADERS.max_year, value=self.max_year),
+            # ROIC
+            roic_max_year=StockInformationEntry(csv_header=HEADERS.roic_max_year, value=self._extract_roic()),
+            roic_max_year_minus_1=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_1, value=self._extract_roic(minus_years=1)
+            ),
+            roic_max_year_minus_2=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_2, value=self._extract_roic(minus_years=2)
+            ),
+            roic_max_year_minus_3=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_3, value=self._extract_roic(minus_years=3)
+            ),
+            roic_max_year_minus_4=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_4, value=self._extract_roic(minus_years=4)
+            ),
+            roic_max_year_minus_5=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_5, value=self._extract_roic(minus_years=5)
+            ),
+            roic_max_year_minus_6=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_6, value=self._extract_roic(minus_years=6)
+            ),
+            roic_max_year_minus_7=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_7, value=self._extract_roic(minus_years=7)
+            ),
+            roic_max_year_minus_8=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_8, value=self._extract_roic(minus_years=8)
+            ),
+            roic_max_year_minus_9=StockInformationEntry(
+                csv_header=HEADERS.roic_max_year_minus_9, value=self._extract_roic(minus_years=9)
+            ),
+            # Book Value per Share
+            book_value_max_year=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year, value=self._extract_book_value()
+            ),
+            book_value_max_year_minus_1=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_1, value=self._extract_book_value(minus_years=1)
+            ),
+            book_value_max_year_minus_2=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_2, value=self._extract_book_value(minus_years=2)
+            ),
+            book_value_max_year_minus_3=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_3, value=self._extract_book_value(minus_years=3)
+            ),
+            book_value_max_year_minus_4=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_4, value=self._extract_book_value(minus_years=4)
+            ),
+            book_value_max_year_minus_5=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_5, value=self._extract_book_value(minus_years=5)
+            ),
+            book_value_max_year_minus_6=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_6, value=self._extract_book_value(minus_years=6)
+            ),
+            book_value_max_year_minus_7=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_7, value=self._extract_book_value(minus_years=7)
+            ),
+            book_value_max_year_minus_8=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_8, value=self._extract_book_value(minus_years=8)
+            ),
+            book_value_max_year_minus_9=StockInformationEntry(
+                csv_header=HEADERS.book_value_max_year_minus_9, value=self._extract_book_value(minus_years=9)
+            ),
+            eps_max_year=StockInformationEntry(csv_header=HEADERS.eps_max_year, value=self._extract_eps()),
+            eps_max_year_minus_1=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_1, value=self._extract_eps(minus_years=1)
+            ),
+            eps_max_year_minus_2=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_2, value=self._extract_eps(minus_years=2)
+            ),
+            eps_max_year_minus_3=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_3, value=self._extract_eps(minus_years=3)
+            ),
+            eps_max_year_minus_4=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_4, value=self._extract_eps(minus_years=4)
+            ),
+            eps_max_year_minus_5=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_5, value=self._extract_eps(minus_years=5)
+            ),
+            eps_max_year_minus_6=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_6, value=self._extract_eps(minus_years=6)
+            ),
+            eps_max_year_minus_7=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_7, value=self._extract_eps(minus_years=7)
+            ),
+            eps_max_year_minus_8=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_8, value=self._extract_eps(minus_years=8)
+            ),
+            eps_max_year_minus_9=StockInformationEntry(
+                csv_header=HEADERS.eps_max_year_minus_9, value=self._extract_eps(minus_years=9)
+            ),
+            revenue_max_year=StockInformationEntry(csv_header=HEADERS.revenue_max_year, value=self._extract_revenue()),
+            revenue_max_year_minus_1=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_1, value=self._extract_revenue(minus_years=1)
+            ),
+            revenue_max_year_minus_2=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_2, value=self._extract_revenue(minus_years=2)
+            ),
+            revenue_max_year_minus_3=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_3, value=self._extract_revenue(minus_years=3)
+            ),
+            revenue_max_year_minus_4=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_4, value=self._extract_revenue(minus_years=4)
+            ),
+            revenue_max_year_minus_5=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_5, value=self._extract_revenue(minus_years=5)
+            ),
+            revenue_max_year_minus_6=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_6, value=self._extract_revenue(minus_years=6)
+            ),
+            revenue_max_year_minus_7=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_7, value=self._extract_revenue(minus_years=7)
+            ),
+            revenue_max_year_minus_8=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_8, value=self._extract_revenue(minus_years=8)
+            ),
+            revenue_max_year_minus_9=StockInformationEntry(
+                csv_header=HEADERS.revenue_max_year_minus_9, value=self._extract_revenue(minus_years=9)
+            ),
+            cash_flow_max_year=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year, value=self._extract_cash_flow()
+            ),
+            cash_flow_max_year_minus_1=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_1, value=self._extract_cash_flow(minus_years=1)
+            ),
+            cash_flow_max_year_minus_2=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_2, value=self._extract_cash_flow(minus_years=2)
+            ),
+            cash_flow_max_year_minus_3=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_3, value=self._extract_cash_flow(minus_years=3)
+            ),
+            cash_flow_max_year_minus_4=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_4, value=self._extract_cash_flow(minus_years=4)
+            ),
+            cash_flow_max_year_minus_5=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_5, value=self._extract_cash_flow(minus_years=5)
+            ),
+            cash_flow_max_year_minus_6=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_6, value=self._extract_cash_flow(minus_years=6)
+            ),
+            cash_flow_max_year_minus_7=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_7, value=self._extract_cash_flow(minus_years=7)
+            ),
+            cash_flow_max_year_minus_8=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_8, value=self._extract_cash_flow(minus_years=8)
+            ),
+            cash_flow_max_year_minus_9=StockInformationEntry(
+                csv_header=HEADERS.free_cash_flow_max_year_minus_9, value=self._extract_cash_flow(minus_years=9)
+            ),
+            growth_estimates=StockInformationEntry(
+                csv_header=HEADERS.growth_estimates, value=self._extract_growth_estimates()
+            ),
+            pe_min=StockInformationEntry(csv_header=HEADERS.pe_ratio_min, value=self._extract_pe_ratio_min()),
+            pe_max=StockInformationEntry(csv_header=HEADERS.pe_ratio_max, value=self._extract_pe_ratio_max()),
+        )
